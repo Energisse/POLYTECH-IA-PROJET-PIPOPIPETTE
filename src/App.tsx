@@ -1,24 +1,194 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { useState } from "react";
+import "./App.css";
+import { Game } from "./game";
+
+const taille = 1000;
+
+const size = 10;
+
+const cellSizeRatio = 24;
+const spaceSizeRatio = 1;
+const borderSizeRatio = 4;
+
+const totalRatio = cellSizeRatio + 2 * spaceSizeRatio + borderSizeRatio;
+
+const parts =
+  taille /
+  (size * cellSizeRatio +
+    (size + 1) * spaceSizeRatio +
+    2 * size * borderSizeRatio);
+
+const game = new Game(size);
 
 function App() {
+  const [verticals, setVerticals] = useState<Array<Array<number>>>(
+    game.getVerticals()
+  );
+  const [horizontals, setHorizontals] = useState<Array<Array<number>>>(
+    game.getHorizontals()
+  );
+  const [cells, setCells] = useState<Array<Array<number>>>(game.getCells());
+  const [score, setScore] = useState(game.getScore());
+
+  const [tour, setTour] = useState(game.getTour());
+
+  function handleCLick(
+    orientation: "vertical" | "horizontal",
+    x: number,
+    y: number
+  ) {
+    game.play(orientation, x, y);
+    setVerticals([...game.getVerticals()]);
+    setHorizontals([...game.getHorizontals()]);
+    setCells([...game.getCells()]);
+    setScore([...game.getScore()]);
+    setTour(game.getTour());
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      {score.map((value, index) => {
+        return (
+          <div
+            key={index}
+            style={{
+              background:
+                tour === index + 1 ? (index ? "blue" : "red") : "transparent",
+            }}
+          >
+            {index + 1}: {value}
+          </div>
+        );
+      })}
+      <svg width={taille} height={taille} viewBox={`0,0,${taille},${taille}`}>
+        {verticals.map((row, y) => {
+          return row.map((cell, x) => {
+            return (
+              <polyline
+                points={`
+                  ${totalRatio * x * parts} ,${
+                  (borderSizeRatio + spaceSizeRatio + totalRatio * y) * parts
+                } 
+
+                ${(totalRatio * x + 0.5 * borderSizeRatio) * parts} ,${
+                  (borderSizeRatio +
+                    spaceSizeRatio +
+                    totalRatio * y -
+                    0.5 * borderSizeRatio) *
+                  parts
+                } 
+                ${(totalRatio * x + borderSizeRatio) * parts},${
+                  (borderSizeRatio + spaceSizeRatio + totalRatio * y) * parts
+                }
+
+                ${(totalRatio * x + borderSizeRatio) * parts},${
+                  (y * totalRatio +
+                    cellSizeRatio +
+                    borderSizeRatio +
+                    spaceSizeRatio) *
+                  parts
+                } 
+
+                ${(totalRatio * x + 0.5 * borderSizeRatio) * parts},${
+                  (y * totalRatio +
+                    cellSizeRatio +
+                    1.5 * borderSizeRatio +
+                    spaceSizeRatio) *
+                  parts
+                } 
+
+                ${totalRatio * x * parts},${
+                  (y * totalRatio +
+                    cellSizeRatio +
+                    borderSizeRatio +
+                    spaceSizeRatio) *
+                  parts
+                } 
+                `}
+                fill={cell === 0 ? "gray" : cell === 1 ? "red" : "blue"}
+                style={{
+                  cursor: "pointer",
+                }}
+                onClick={() => handleCLick("vertical", x, y)}
+              />
+            );
+          });
+        })}
+        {horizontals.map((row, y) => {
+          return row.map((cell, x) => {
+            return (
+              <polyline
+                points={`
+                  ${
+                    (borderSizeRatio + spaceSizeRatio + totalRatio * x) * parts
+                  } ,${totalRatio * y * parts} 
+
+                  ${
+                    (0.5 * borderSizeRatio + spaceSizeRatio + totalRatio * x) *
+                    parts
+                  } ,${(totalRatio * y + 0.5 * borderSizeRatio) * parts} 
+
+                  ${
+                    (borderSizeRatio + spaceSizeRatio + totalRatio * x) * parts
+                  } ,${(totalRatio * y + borderSizeRatio) * parts} 
+
+                  ${
+                    (borderSizeRatio +
+                      spaceSizeRatio +
+                      cellSizeRatio +
+                      totalRatio * x) *
+                    parts
+                  },${(totalRatio * y + borderSizeRatio) * parts} 
+
+                  ${
+                    (1.5 * borderSizeRatio +
+                      spaceSizeRatio +
+                      cellSizeRatio +
+                      totalRatio * x) *
+                    parts
+                  },${(totalRatio * y + 0.5 * borderSizeRatio) * parts}
+
+                  ${
+                    (borderSizeRatio +
+                      spaceSizeRatio +
+                      cellSizeRatio +
+                      totalRatio * x) *
+                    parts
+                  },${totalRatio * y * parts} 
+                `}
+                fill={cell === 0 ? "gray" : cell === 1 ? "red" : "blue"}
+                style={{
+                  cursor: "pointer",
+                }}
+                onClick={() => handleCLick("horizontal", x, y)}
+              />
+            );
+          });
+        })}
+        {cells.map((row, y) => {
+          return row.map((cell, x) => {
+            return (
+              <rect
+                x={
+                  (borderSizeRatio + spaceSizeRatio) * parts +
+                  x *
+                    (borderSizeRatio + 2 * spaceSizeRatio + cellSizeRatio) *
+                    parts
+                }
+                y={
+                  (borderSizeRatio + spaceSizeRatio) * parts +
+                  y *
+                    (borderSizeRatio + 2 * spaceSizeRatio + cellSizeRatio) *
+                    parts
+                }
+                width={parts * cellSizeRatio}
+                height={parts * cellSizeRatio}
+                fill={cell === 0 ? "transparent" : cell === 1 ? "red" : "blue"}
+              />
+            );
+          });
+        })}
+      </svg>
     </div>
   );
 }
