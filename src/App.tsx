@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import { Game } from "./game";
 
 const taille = 1000;
 
-const size = 10;
+const size = 5;
 
 const cellSizeRatio = 24;
 const spaceSizeRatio = 1;
@@ -32,17 +32,28 @@ function App() {
 
   const [tour, setTour] = useState(game.getTour());
 
+  useEffect(()=>{
+    game.addEventListener("boardChange", (e) => {
+      const { verticals, horizontals, cells } = (e as CustomEvent<{
+        verticals: number[][];
+        horizontals: number[][];
+        cells: number[][];
+      }>).detail
+
+      setVerticals([...verticals]);
+      setHorizontals([...horizontals]);
+      setCells([...cells]);
+      setScore([...score]);
+      setTour(tour);
+    })
+  },[])
+
   function handleCLick(
     orientation: "vertical" | "horizontal",
     x: number,
     y: number
   ) {
     game.play(orientation, x, y);
-    setVerticals([...game.getVerticals()]);
-    setHorizontals([...game.getHorizontals()]);
-    setCells([...game.getCells()]);
-    setScore([...game.getScore()]);
-    setTour(game.getTour());
   }
 
   return (

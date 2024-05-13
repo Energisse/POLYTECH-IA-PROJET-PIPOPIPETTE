@@ -1,4 +1,4 @@
-export class Game {
+export class Game extends EventTarget {
 
     private cells: number[][] = [];
     private verticals: number[][] = [];
@@ -9,6 +9,7 @@ export class Game {
     private tour: number = 1;
 
     constructor(size: number) {
+        super()
         this.cells = new Array(size).fill(0).map(() => new Array(size).fill(0));
         this.verticals = new Array(size).fill(0).map(() => new Array(size + 1).fill(0));
         this.horizontals = new Array(size + 1).fill(0).map(() => new Array(size).fill(0));
@@ -58,6 +59,12 @@ export class Game {
             if (result) cells.push(result);
         }
 
+        this.dispatchEvent(new CustomEvent("boardChange", { detail: { 
+            verticals: this.verticals, 
+            horizontals: this.horizontals, 
+            cells: this.cells
+         } }));
+
         if (!cells.length) {
             this.tour = this.tour === 1 ? 2 : 1;
             return;
@@ -68,6 +75,9 @@ export class Game {
         cells.forEach((cell) => {
             this.cells[cell[1]][cell[0]] = this.tour;
         });
+
+        this.dispatchEvent(new CustomEvent("score", { detail: this.score }));
+
     }
 
     private check(x: number, y: number): false | [x: number, y: number] {
