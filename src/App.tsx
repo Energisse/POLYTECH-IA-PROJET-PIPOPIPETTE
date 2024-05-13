@@ -4,7 +4,7 @@ import { Game } from "./game";
 
 const taille = 1000;
 
-const size = 5;
+const size = 3;
 
 const cellSizeRatio = 24;
 const spaceSizeRatio = 1;
@@ -53,7 +53,7 @@ function App() {
     x: number,
     y: number
   ) {
-    game.play(orientation, x, y);
+    game.playHuman(orientation, x, y);
   }
 
   return (
