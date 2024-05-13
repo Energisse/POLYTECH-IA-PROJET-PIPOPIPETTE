@@ -36,9 +36,6 @@ export class Game extends EventTarget {
     }
     public playHuman(orientation: "vertical" | "horizontal", x: number, y: number): void {
         this.play(orientation, x, y);
-        // for( const game of this.getNodes()){
-        //     console.log(game.game);
-        // }
         this.iaPlay();
     }
 
@@ -66,29 +63,31 @@ export class Game extends EventTarget {
             if (result) cells.push(result);
         }
 
-        this.dispatchEvent(new CustomEvent("boardChange", { detail: { 
-            verticals: this.verticals, 
-            horizontals: this.horizontals, 
-            cells: this.cells
-         } }));
+        this.dispatchEvent(new CustomEvent("boardChange", {
+            detail: {
+                verticals: this.verticals,
+                horizontals: this.horizontals,
+                cells: this.cells
+            }
+        }));
 
         if (!cells.length) {
             this.tour = this.tour === 1 ? 2 : 1;
         }
-        else{
+        else {
             this.score[this.tour - 1] += cells.length;
 
             cells.forEach((cell) => {
                 this.cells[cell[1]][cell[0]] = this.tour;
             });
-    
+
             this.dispatchEvent(new CustomEvent("score", { detail: this.score }));
         }
     }
 
-    public iaPlay(){
-        while(this.tour === 2 && !this.isFinished()){
-            const {x,y,orientation} = minimax(this, 3, true);
+    public iaPlay() {
+        while (this.tour === 2 && !this.isFinished()) {
+            const { x, y, orientation } = minimax(this, 3, true);
             this.play(orientation, x, y);
         }
     }
@@ -112,11 +111,11 @@ export class Game extends EventTarget {
         return false;
     }
 
-    public evaluation (){
-        return  this.score[1] - this.score[0];
+    public evaluation() {
+        return this.score[1] - this.score[0];
     }
 
-    private copy (){
+    private copy() {
         const game = new Game(this.cells.length);
         game.cells = this.cells.map((row) => [...row]);
         game.verticals = this.verticals.map((row) => [...row]);
@@ -126,7 +125,7 @@ export class Game extends EventTarget {
         return game;
     }
 
-    public *getNodes() : Generator<{
+    public *getNodes(): Generator<{
         x: number;
         y: number;
         game: Game;
@@ -138,52 +137,50 @@ export class Game extends EventTarget {
                     const game = this.copy();
                     const lastTour = game.tour;
                     game.play("vertical", x, y);
-                    if(game.tour === lastTour){
-                        for(const node of game.getNodes()){
-                            yield {...node,x,y,orientation:"vertical"};
+                    if (game.tour === lastTour && !game.isFinished()) {
+                        for (const node of game.getNodes()) {
+                            yield { ...node, x, y, orientation: "vertical" };
                         }
                     }
-                    else yield {x,y,game,orientation:"vertical"};
+                    else yield { x, y, game, orientation: "vertical" };
                 }
             }
         }
-    
+
         for (let y = 0; y < this.horizontals.length; y++) {
             for (let x = 0; x < this.horizontals[y].length; x++) {
                 if (this.horizontals[y][x] === 0) {
                     const game = this.copy();
                     const lastTour = game.tour;
                     game.play("horizontal", x, y);
-                    console.log(game.tour, lastTour);
-                    if(game.tour === lastTour){
-                        for(const node of game.getNodes()){
-                            yield {...node,x,y,orientation:"horizontal"};
+                    if (game.tour === lastTour && !game.isFinished()) {
+                        for (const node of game.getNodes()) {
+                            yield { ...node, x, y, orientation: "horizontal" };
                         }
                     }
-                    else yield {x,y,game,orientation:"horizontal"};
+                    else yield { x, y, game, orientation: "horizontal" };
                 }
             }
         }
     }
 }
 
-function minimax(game:Game, depth:number,maximizingPlayer:boolean): {x:number,y:number,value:number, orientation:"vertical" | "horizontal"} {
-    if(depth === 0 || game.isFinished())
+function minimax(game: Game, depth: number, maximizingPlayer: boolean): { x: number, y: number, value: number, orientation: "vertical" | "horizontal" } {
+    if (depth === 0 || game.isFinished())
         return {
-            x:0,
-            y:0,
-            orientation:"vertical",
-            value:game.evaluation()
+            x: 0,
+            y: 0,
+            orientation: "vertical",
+            value: game.evaluation()
         }
-    let value:number;
+    let value: number;
     let x = -1, y = -1;
-    let orientation:"vertical" | "horizontal" = "vertical";
-    if( maximizingPlayer){
+    let orientation: "vertical" | "horizontal" = "vertical";
+    if (maximizingPlayer) {
         value = -Infinity;
-        for(const {game:node,x:_x,y:_y,orientation:_orientation} of game.getNodes()){
-            console.log(node);
-            const {value:result} = minimax(node, depth - 1, false);
-            if(result > value){
+        for (const { game: node, x: _x, y: _y, orientation: _orientation } of game.getNodes()) {
+            const { value: result } = minimax(node, depth - 1, false);
+            if (result > value) {
                 value = result;
                 x = _x;
                 y = _y;
@@ -191,13 +188,11 @@ function minimax(game:Game, depth:number,maximizingPlayer:boolean): {x:number,y:
             }
         }
     }
-    else{
+    else {
         value = +Infinity;
-        for(const {game:node,x:_x,y:_y,orientation:_orientation} of game.getNodes()){
-            console.log(node);
-
-            const {value:result}  = minimax(node, depth - 1, true);
-            if(result < value){
+        for (const { game: node, x: _x, y: _y, orientation: _orientation } of game.getNodes()) {
+            const { value: result } = minimax(node, depth - 1, true);
+            if (result < value) {
                 value = result;
                 x = _x;
                 y = _y;
@@ -205,5 +200,5 @@ function minimax(game:Game, depth:number,maximizingPlayer:boolean): {x:number,y:
             }
         }
     }
-    return {x,y,value,orientation};
+    return { x, y, value, orientation };
 } 
