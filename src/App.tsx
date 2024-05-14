@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { Game } from "./game";
+import { Slider } from "@mui/material";
 
 const taille = 1000;
 
-const size = 3;
+const size = 5;
 
 const cellSizeRatio = 24;
 const spaceSizeRatio = 1;
@@ -12,15 +13,15 @@ const borderSizeRatio = 4;
 
 const totalRatio = cellSizeRatio + 2 * spaceSizeRatio + borderSizeRatio;
 
-const parts =
-  taille /
-  (size * cellSizeRatio +
-    (size + 1) * spaceSizeRatio +
-    2 * size * borderSizeRatio);
 
-const game = new Game(size);
+
+let game = new Game(size);
+
+
 
 function App() {
+  const [size, setSize] = useState<number>(3);
+
   const [verticals, setVerticals] = useState<Array<Array<number>>>(
     game.getVerticals()
   );
@@ -32,7 +33,25 @@ function App() {
 
   const [tour, setTour] = useState(game.getTour());
 
-  useEffect(()=>{
+  const parts =  useMemo(()=>{
+    return taille /
+    (size * cellSizeRatio +
+      (size + 1) * spaceSizeRatio +
+      2 * size * borderSizeRatio);
+  },[size])
+
+  const handleChange = (event: Event, newValue: number | number[]) => {
+    setSize(newValue as number);
+  };
+
+  useEffect(() => {
+    game = new Game(size);
+    setVerticals([...game.getVerticals()]);
+    setHorizontals([...game.getHorizontals()]);
+    setCells([...game.getCells()]);
+    setScore([...game.getScore()]);
+    setTour(game.getTour());
+
     game.addEventListener("boardChange", (e) => {
       const { verticals, horizontals, cells } = (e as CustomEvent<{
         verticals: number[][];
@@ -46,7 +65,7 @@ function App() {
       setScore([...score]);
       setTour(tour);
     })
-  },[])
+  }, [size]);
 
   function handleCLick(
     orientation: "vertical" | "horizontal",
@@ -58,6 +77,7 @@ function App() {
 
   return (
     <div className="App">
+        <Slider aria-label="Volume" value={size} onChange={handleChange} max={10} min={1} />
       {score.map((value, index) => {
         return (
           <div

@@ -87,7 +87,7 @@ export class Game extends EventTarget {
 
     public iaPlay() {
         while (this.tour === 2 && !this.isFinished()) {
-            const { x, y, orientation } = minimax(this, 3, true);
+            const { x, y, orientation } = minimax(this, 2, true);
             this.play(orientation, x, y);
         }
     }
