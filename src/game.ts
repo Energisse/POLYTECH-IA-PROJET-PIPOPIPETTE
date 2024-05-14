@@ -87,7 +87,9 @@ export class Game extends EventTarget {
 
     public iaPlay() {
         while (this.tour === 2 && !this.isFinished()) {
-            const { x, y, orientation } = minimax(this, 2, true);
+            // const { x, y, orientation } = minimax(this, 3, true);
+            // const { x, y, orientation } = negamax(this, 3, true);
+            const { x, y, orientation } = nigamax(this, 3, true);
             this.play(orientation, x, y);
         }
     }
@@ -201,4 +203,60 @@ function minimax(game: Game, depth: number, maximizingPlayer: boolean): { x: num
         }
     }
     return { x, y, value, orientation };
-} 
+}
+
+function negamax(game: Game, depth: number, maximizingPlayer: boolean): { x: number, y: number, value: number, orientation: "vertical" | "horizontal" } {
+    if (depth === 0 || game.isFinished())
+        return {
+            x: 0,
+            y: 0,
+            orientation: "vertical",
+            value: game.evaluation() * (maximizingPlayer ? 1 : -1)
+        }
+    let value = -Infinity;
+    let x = -1, y = -1;
+    let orientation: "vertical" | "horizontal" = "vertical";
+    for (const { game: node, x: _x, y: _y, orientation: _orientation } of game.getNodes()) {
+        const { value: result } = negamax(node, depth - 1, !maximizingPlayer);
+        if (-result > value) {
+            value = -result;
+            x = _x;
+            y = _y;
+            orientation = _orientation;
+        }
+    }
+    return { x, y, value, orientation };
+}
+
+function nigamax(game: Game, depth: number, maximizingPlayer: boolean, alpha: number = -Infinity, beta: number = Infinity): { x: number, y: number, value: number, orientation: "vertical" | "horizontal" } {
+    if (depth === 0 || game.isFinished()) {
+        return {
+            x: 0,
+            y: 0,
+            orientation: "vertical",
+            value: game.evaluation() * (maximizingPlayer ? 1 : -1)
+        }
+    }
+    let value = -Infinity;
+    let x = -1, y = -1;
+    let orientation: "vertical" | "horizontal" = "vertical";
+    for (const { game: node, x: _x, y: _y, orientation: _orientation } of game.getNodes()) {
+        const { value: result } = nigamax(node, depth - 1, !maximizingPlayer, -beta, -alpha);
+        if (-result > value) {
+            value = -result;
+            x = _x;
+            y = _y;
+            orientation = _orientation;
+        }
+        if (value >= beta) {
+            return {
+                x,
+                y,
+                orientation,
+                value
+            }
+        }
+        alpha = Math.max(alpha, value);
+    }
+    return { x, y, orientation, value };
+}

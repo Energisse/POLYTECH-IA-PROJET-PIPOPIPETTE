@@ -13,11 +13,7 @@ const borderSizeRatio = 4;
 
 const totalRatio = cellSizeRatio + 2 * spaceSizeRatio + borderSizeRatio;
 
-
-
 let game = new Game(size);
-
-
 
 function App() {
   const [size, setSize] = useState<number>(3);
@@ -33,12 +29,14 @@ function App() {
 
   const [tour, setTour] = useState(game.getTour());
 
-  const parts =  useMemo(()=>{
-    return taille /
-    (size * cellSizeRatio +
-      (size + 1) * spaceSizeRatio +
-      2 * size * borderSizeRatio);
-  },[size])
+  const parts = useMemo(() => {
+    return (
+      taille /
+      (size * cellSizeRatio +
+        (size + 1) * spaceSizeRatio +
+        2 * size * borderSizeRatio)
+    );
+  }, [size]);
 
   const handleChange = (event: Event, newValue: number | number[]) => {
     setSize(newValue as number);
@@ -53,18 +51,20 @@ function App() {
     setTour(game.getTour());
 
     game.addEventListener("boardChange", (e) => {
-      const { verticals, horizontals, cells } = (e as CustomEvent<{
-        verticals: number[][];
-        horizontals: number[][];
-        cells: number[][];
-      }>).detail
+      const { verticals, horizontals, cells } = (
+        e as CustomEvent<{
+          verticals: number[][];
+          horizontals: number[][];
+          cells: number[][];
+        }>
+      ).detail;
 
       setVerticals([...verticals]);
       setHorizontals([...horizontals]);
       setCells([...cells]);
       setScore([...score]);
       setTour(tour);
-    })
+    });
   }, [size]);
 
   function handleCLick(
@@ -77,7 +77,13 @@ function App() {
 
   return (
     <div className="App">
-        <Slider aria-label="Volume" value={size} onChange={handleChange} max={10} min={1} />
+      <Slider
+        aria-label="Volume"
+        value={size}
+        onChange={handleChange}
+        max={10}
+        min={1}
+      />
       {score.map((value, index) => {
         return (
           <div
