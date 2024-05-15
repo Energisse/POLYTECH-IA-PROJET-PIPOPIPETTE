@@ -1,273 +1,50 @@
-import { Slider } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
-import Confetti from "react-confetti";
-import useWindowSize from "react-use/lib/useWindowSize";
+import { Button, Slider } from "@mui/material";
+import { useState } from "react";
 import "./App.css";
-import { Game } from "./game";
-
-const taille = 1000;
-
-const size = 5;
-
-const cellSizeRatio = 24;
-const spaceSizeRatio = 1;
-const borderSizeRatio = 4;
-
-const totalRatio = cellSizeRatio + 2 * spaceSizeRatio + borderSizeRatio;
-
-let game = new Game(size);
+import Game from "./Game";
+import { GameMode } from "./utils/game";
 
 function App() {
   const [size, setSize] = useState<number>(3);
 
-  const [verticals, setVerticals] = useState<Array<Array<number>>>(
-    game.getVerticals()
-  );
-  const [horizontals, setHorizontals] = useState<Array<Array<number>>>(
-    game.getHorizontals()
-  );
-  const [cells, setCells] = useState<Array<Array<number>>>(game.getCells());
-  const [score, setScore] = useState(game.getScore());
-
-  const [won, setWon] = useState<null | boolean>(null);
-
-  const [tour, setTour] = useState(game.getTour());
-
-  const parts = useMemo(() => {
-    return (
-      taille /
-      (size * cellSizeRatio +
-        (size + 1) * spaceSizeRatio +
-        2 * size * borderSizeRatio)
-    );
-  }, [size]);
+  const [mode, setMode] = useState<GameMode | null>(null);
 
   const handleChange = (event: Event, newValue: number | number[]) => {
     setSize(newValue as number);
   };
 
-  useEffect(() => {
-    game = new Game(size);
-    setVerticals([...game.getVerticals()]);
-    setHorizontals([...game.getHorizontals()]);
-    setCells([...game.getCells()]);
-    setScore([...game.getScore()]);
-    setTour(game.getTour());
-    setWon(null);
-
-    game.addEventListener("boardChange", (e) => {
-      const { verticals, horizontals, cells } = (
-        e as CustomEvent<{
-          verticals: number[][];
-          horizontals: number[][];
-          cells: number[][];
-        }>
-      ).detail;
-      setVerticals([...verticals]);
-      setHorizontals([...horizontals]);
-      setCells([...cells]);
-      setScore([...score]);
-      setTour(tour);
-    });
-
-    game.addEventListener("loose", (e) => {
-      setWon(false);
-    });
-    game.addEventListener("win", (e) => {
-      setWon(true);
-    });
-  }, [size]);
-
-  function handleCLick(
-    orientation: "vertical" | "horizontal",
-    x: number,
-    y: number
-  ) {
-    game.playHuman(orientation, x, y);
-  }
-
-  const { width, height } = useWindowSize();
-
-  const effect = useMemo(() => {
-    if (won) {
-      return (
-        <Confetti
-          numberOfPieces={500}
-          width={width}
-          height={height}
-          colors={["red"]}
-        />
-      );
-    } else if (won === false) {
-      return (
-        <Confetti
-          numberOfPieces={500}
-          width={width}
-          height={height}
-          colors={["blue"]}
-        />
-      );
-    }
-    return null;
-  }, [won]);
-
   return (
     <div className="App">
-      <Slider
-        aria-label="Volume"
-        value={size}
-        onChange={handleChange}
-        max={10}
-        min={1}
-      />
-      {score.map((value, index) => {
-        return (
-          <div
-            key={index}
-            style={{
-              background:
-                tour === index + 1 ? (index ? "blue" : "red") : "transparent",
-            }}
-          >
-            {index + 1}: {value}
-          </div>
-        );
-      })}
-      <svg width={taille} height={taille} viewBox={`0,0,${taille},${taille}`}>
-        {verticals.map((row, y) => {
-          return row.map((cell, x) => {
-            return (
-              <polyline
-                points={`
-                  ${totalRatio * x * parts} ,${
-                  (borderSizeRatio + spaceSizeRatio + totalRatio * y) * parts
-                } 
-                
-                ${(totalRatio * x + 0.5 * borderSizeRatio) * parts} ,${
-                  (borderSizeRatio +
-                    spaceSizeRatio +
-                    totalRatio * y -
-                    0.5 * borderSizeRatio) *
-                  parts
-                } 
-                ${(totalRatio * x + borderSizeRatio) * parts},${
-                  (borderSizeRatio + spaceSizeRatio + totalRatio * y) * parts
-                }
-                
-                ${(totalRatio * x + borderSizeRatio) * parts},${
-                  (y * totalRatio +
-                    cellSizeRatio +
-                    borderSizeRatio +
-                    spaceSizeRatio) *
-                  parts
-                } 
-                  
-                  ${(totalRatio * x + 0.5 * borderSizeRatio) * parts},${
-                  (y * totalRatio +
-                    cellSizeRatio +
-                    1.5 * borderSizeRatio +
-                    spaceSizeRatio) *
-                  parts
-                } 
-                    
-                    ${totalRatio * x * parts},${
-                  (y * totalRatio +
-                    cellSizeRatio +
-                    borderSizeRatio +
-                    spaceSizeRatio) *
-                  parts
-                } 
-                  `}
-                fill={cell === 0 ? "gray" : cell === 1 ? "red" : "blue"}
-                style={{
-                  cursor: "pointer",
-                  transition: "fill .5s",
-                }}
-                onClick={() => handleCLick("vertical", x, y)}
-              />
-            );
-          });
-        })}
-        {horizontals.map((row, y) => {
-          return row.map((cell, x) => {
-            return (
-              <polyline
-                points={`
-                  ${
-                    (borderSizeRatio + spaceSizeRatio + totalRatio * x) * parts
-                  } ,${totalRatio * y * parts} 
-                  
-                  ${
-                    (0.5 * borderSizeRatio + spaceSizeRatio + totalRatio * x) *
-                    parts
-                  } ,${(totalRatio * y + 0.5 * borderSizeRatio) * parts} 
-                  
-                  ${
-                    (borderSizeRatio + spaceSizeRatio + totalRatio * x) * parts
-                  } ,${(totalRatio * y + borderSizeRatio) * parts} 
-
-                  ${
-                    (borderSizeRatio +
-                      spaceSizeRatio +
-                      cellSizeRatio +
-                      totalRatio * x) *
-                    parts
-                  },${(totalRatio * y + borderSizeRatio) * parts} 
-
-                  ${
-                    (1.5 * borderSizeRatio +
-                      spaceSizeRatio +
-                      cellSizeRatio +
-                      totalRatio * x) *
-                    parts
-                  },${(totalRatio * y + 0.5 * borderSizeRatio) * parts}
-
-                    ${
-                      (borderSizeRatio +
-                        spaceSizeRatio +
-                        cellSizeRatio +
-                        totalRatio * x) *
-                      parts
-                    },${totalRatio * y * parts} 
-                `}
-                fill={cell === 0 ? "gray" : cell === 1 ? "red" : "blue"}
-                style={{
-                  cursor: "pointer",
-                  transition: "fill .5s",
-                }}
-                onClick={() => handleCLick("horizontal", x, y)}
-              />
-            );
-          });
-        })}
-        {cells.map((row, y) => {
-          return row.map((cell, x) => {
-            return (
-              <rect
-                x={
-                  (borderSizeRatio + spaceSizeRatio) * parts +
-                  x *
-                    (borderSizeRatio + 2 * spaceSizeRatio + cellSizeRatio) *
-                    parts
-                }
-                y={
-                  (borderSizeRatio + spaceSizeRatio) * parts +
-                  y *
-                    (borderSizeRatio + 2 * spaceSizeRatio + cellSizeRatio) *
-                    parts
-                }
-                width={parts * cellSizeRatio}
-                height={parts * cellSizeRatio}
-                fill={cell === 0 ? "transparent" : cell === 1 ? "red" : "blue"}
-                style={{
-                  transition: "fill .5s",
-                }}
-              />
-            );
-          });
-        })}
-      </svg>
-      {effect}
+      {mode === null ? (
+        <>
+          <Slider
+            value={size}
+            onChange={handleChange}
+            min={3}
+            max={10}
+            step={1}
+            valueLabelDisplay="auto"
+            marks
+          />
+          <Button variant="contained" onClick={() => setMode(GameMode["1v1"])}>
+            Joueur contre joueur
+          </Button>
+          <Button variant="contained" onClick={() => setMode(GameMode["1vIA"])}>
+            Joueur contre IA
+          </Button>
+          <Button variant="contained" onClick={() => setMode(GameMode["IAv1"])}>
+          IA contre Joueur
+          </Button>
+          <Button variant="contained" onClick={() => setMode(GameMode["IAvIA"])}>
+            IA contre IA
+          </Button>
+        </>
+      ) : (
+        <>
+          <Button onClick={() => setMode(null)}>Retour</Button>
+          <Game size={size} mode={mode}/>
+        </>
+      )}
     </div>
   );
 }

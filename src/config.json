@@ -1,0 +1,8 @@
+{
+    "cellSizeRatio":24,
+    "spaceSizeRatio":1,
+    "borderSizeRatio":4,
+    "_totalRatio": "cellSizeRatio + 2 * spaceSizeRatio + borderSizeRatio",
+    "totalRatio":30,
+    "taille":1000
+}

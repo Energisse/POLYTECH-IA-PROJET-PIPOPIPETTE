@@ -1,4 +1,84 @@
-export class Game extends EventTarget {
+import nigamax from "./nigamax";
+import negamax from "./negamax";
+
+export enum GameMode {
+  "1v1",
+  "1vIA",
+  "IAv1",
+  "IAvIA",
+}
+
+export default class Game extends EventTarget {
+  private gameMode: GameMode;
+  readonly board: Board;
+  private stoped: boolean = false;
+
+  constructor(size: number, gameMode: GameMode) {
+    super();
+    this.gameMode = gameMode;
+    this.board = new Board(size);
+    console.log("gameMode",gameMode)
+    if(this.gameMode === GameMode.IAvIA){
+      this.iaLoop();
+    }
+    if(this.gameMode === GameMode.IAv1){
+      this.iaPlay();
+    }
+  }
+
+  private async iaLoop(){
+      while(this.board.isFinished() === false && this.stoped === false){
+        await this.iaPlay();
+      }
+  }
+
+  public stop(){
+    this.stoped = true;
+  }
+
+  public playHuman(
+    orientation: "vertical" | "horizontal",
+    x: number,
+    y: number
+  ): void {
+    switch (this.gameMode) {
+      case GameMode["1v1"]:
+        this.board.play(orientation, x, y);
+        break;
+      case GameMode["1vIA"]:
+        if (this.board.getTour() === 2) return;
+        this.board.play(orientation, x, y);
+        if (this.board.getTour() === 2 && !this.board.isFinished()) this.iaPlay();
+        break;
+      case GameMode["IAv1"]:
+        if (this.board.getTour() === 1) return;
+        this.board.play(orientation, x, y);
+        if (this.board.getTour() === 1 && !this.board.isFinished()) this.iaPlay();
+        break;
+    }
+  }
+
+  public iaPlay() {
+    return new Promise<void>((resolve) => {
+      const tour = this.board.getTour();
+      // const { x, y, orientation } = minimax(this, 3, true,this.board.getTour() - 1);
+      // const { x, y, orientation } = negamax(this, 3, true,this.board.getTour() - 1);
+  
+      const start = window.performance.now();
+      const { x, y, orientation } = nigamax(this.board, 3, true,this.board.getTour() - 1);
+      const end = window.performance.now();
+      setTimeout(() => {
+        this.board.play(orientation, x, y);
+        if (this.board.getTour() === tour && !this.board.isFinished()) this.iaPlay();
+        resolve()
+      }, 500 - (end - start));
+    
+    });
+  }
+}
+
+
+export class Board extends EventTarget {
   private cells: number[][] = [];
   private verticals: number[][] = [];
   private horizontals: number[][] = [];
@@ -36,15 +116,6 @@ export class Game extends EventTarget {
 
   public getTour(): number {
     return this.tour;
-  }
-  public playHuman(
-    orientation: "vertical" | "horizontal",
-    x: number,
-    y: number
-  ): void {
-    if (this.tour === 2) return;
-    this.play(orientation, x, y);
-    if (this.tour === 2 && !this.isFinished()) this.iaPlay();
   }
 
   public play(
@@ -104,19 +175,6 @@ export class Game extends EventTarget {
     }
   }
 
-  public iaPlay() {
-    // const { x, y, orientation } = minimax(this, 3, true);
-    // const { x, y, orientation } = negamax(this, 3, true);
-
-    const start = window.performance.now();
-    const { x, y, orientation } = nigamax(this, 2, true);
-    const end = window.performance.now();
-    setTimeout(() => {
-      this.play(orientation, x, y);
-      if (this.tour === 2 && !this.isFinished()) this.iaPlay();
-    }, 500 - (end - start));
-  }
-
   public isFinished() {
     return this.cells.every((row) => row.every((cell) => cell !== 0));
   }
@@ -136,25 +194,25 @@ export class Game extends EventTarget {
     return false;
   }
 
-  public evaluation() {
-    return this.score[1] - this.score[0];
+  public evaluation(idPlayer:number) {
+    return this.score[idPlayer] - this.score[(idPlayer+1)%2];
   }
 
   private copy() {
-    const game = new Game(this.cells.length);
-    game.cells = this.cells.map((row) => [...row]);
-    game.verticals = this.verticals.map((row) => [...row]);
-    game.horizontals = this.horizontals.map((row) => [...row]);
-    game.score = [...this.score];
-    game.tour = this.tour;
-    return game;
+    const board = new Board(this.cells.length);
+    board.cells = this.cells.map((row) => [...row]);
+    board.verticals = this.verticals.map((row) => [...row]);
+    board.horizontals = this.horizontals.map((row) => [...row]);
+    board.score = [...this.score];
+    board.tour = this.tour;
+    return board;
   }
 
   private *getNodesVertical(): Generator<
     {
       x: number;
       y: number;
-      game: Game;
+      board: Board;
       orientation: "vertical" | "horizontal";
     },
     void,
@@ -169,14 +227,14 @@ export class Game extends EventTarget {
         Math.floor(Math.random() * playable.length),
         1
       )[0];
-      const game = this.copy();
-      const lastTour = game.tour;
-      game.play("vertical", x, y);
-      if (game.tour === lastTour && !game.isFinished()) {
-        for (const node of game.getNodes()) {
+      const board = this.copy();
+      const lastTour = board.tour;
+      board.play("vertical", x, y);
+      if (board.tour === lastTour && !board.isFinished()) {
+        for (const node of board.getNodes()) {
           yield { ...node, x, y, orientation: "vertical" };
         }
-      } else yield { x, y, game, orientation: "vertical" };
+      } else yield { x, y, board, orientation: "vertical" };
     }
   }
 
@@ -184,7 +242,7 @@ export class Game extends EventTarget {
     {
       x: number;
       y: number;
-      game: Game;
+      board: Board;
       orientation: "vertical" | "horizontal";
     },
     void,
@@ -199,14 +257,14 @@ export class Game extends EventTarget {
         Math.floor(Math.random() * playable.length),
         1
       )[0];
-      const game = this.copy();
-      const lastTour = game.tour;
-      game.play("horizontal", x, y);
-      if (game.tour === lastTour && !game.isFinished()) {
-        for (const node of game.getNodes()) {
+      const board = this.copy();
+      const lastTour = board.tour;
+      board.play("horizontal", x, y);
+      if (board.tour === lastTour && !board.isFinished()) {
+        for (const node of board.getNodes()) {
           yield { ...node, x, y, orientation: "horizontal" };
         }
-      } else yield { x, y, game, orientation: "horizontal" };
+      } else yield { x, y, board, orientation: "horizontal" };
     }
   }
 
@@ -214,7 +272,7 @@ export class Game extends EventTarget {
     {
       x: number;
       y: number;
-      game: Game;
+      board: Board;
       orientation: "vertical" | "horizontal";
     },
     void,
@@ -252,96 +310,4 @@ export class Game extends EventTarget {
   }
 }
 
-function negamax(
-  game: Game,
-  depth: number,
-  maximizingPlayer: boolean
-): {
-  x: number;
-  y: number;
-  value: number;
-  orientation: "vertical" | "horizontal";
-} {
-  if (depth === 0 || game.isFinished())
-    return {
-      x: 0,
-      y: 0,
-      orientation: "vertical",
-      value: game.evaluation() * (maximizingPlayer ? 1 : -1),
-    };
-  let value = -Infinity;
-  let x = -1,
-    y = -1;
-  let orientation: "vertical" | "horizontal" = "vertical";
-  for (const {
-    game: node,
-    x: _x,
-    y: _y,
-    orientation: _orientation,
-  } of game.getNodes()) {
-    const { value: result } = negamax(node, depth - 1, !maximizingPlayer);
-    if (-result > value) {
-      value = -result;
-      x = _x;
-      y = _y;
-      orientation = _orientation;
-    }
-  }
-  return { x, y, value, orientation };
-}
 
-function nigamax(
-  game: Game,
-  depth: number,
-  maximizingPlayer: boolean,
-  alpha: number = -Infinity,
-  beta: number = Infinity
-): {
-  x: number;
-  y: number;
-  value: number;
-  orientation: "vertical" | "horizontal";
-} {
-  if (depth === 0 || game.isFinished()) {
-    return {
-      x: 0,
-      y: 0,
-      orientation: "vertical",
-      value: game.evaluation() * (maximizingPlayer ? 1 : -1),
-    };
-  }
-  let value = -Infinity;
-  let x = -1,
-    y = -1;
-  let orientation: "vertical" | "horizontal" = "vertical";
-  for (const {
-    game: node,
-    x: _x,
-    y: _y,
-    orientation: _orientation,
-  } of game.getNodes()) {
-    const { value: result } = nigamax(
-      node,
-      depth - 1,
-      !maximizingPlayer,
-      -beta,
-      -alpha
-    );
-    if (-result > value) {
-      value = -result;
-      x = _x;
-      y = _y;
-      orientation = _orientation;
-    }
-    if (value >= beta) {
-      return {
-        x,
-        y,
-        orientation,
-        value,
-      };
-    }
-    alpha = Math.max(alpha, value);
-  }
-  return { x, y, orientation, value };
-}
