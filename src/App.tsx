@@ -1,7 +1,9 @@
+import { Slider } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
+import Confetti from "react-confetti";
+import useWindowSize from "react-use/lib/useWindowSize";
 import "./App.css";
 import { Game } from "./game";
-import { Slider } from "@mui/material";
 
 const taille = 1000;
 
@@ -27,6 +29,8 @@ function App() {
   const [cells, setCells] = useState<Array<Array<number>>>(game.getCells());
   const [score, setScore] = useState(game.getScore());
 
+  const [won, setWon] = useState<null | boolean>(null);
+
   const [tour, setTour] = useState(game.getTour());
 
   const parts = useMemo(() => {
@@ -49,6 +53,7 @@ function App() {
     setCells([...game.getCells()]);
     setScore([...game.getScore()]);
     setTour(game.getTour());
+    setWon(null);
 
     game.addEventListener("boardChange", (e) => {
       const { verticals, horizontals, cells } = (
@@ -58,12 +63,18 @@ function App() {
           cells: number[][];
         }>
       ).detail;
-
       setVerticals([...verticals]);
       setHorizontals([...horizontals]);
       setCells([...cells]);
       setScore([...score]);
       setTour(tour);
+    });
+
+    game.addEventListener("loose", (e) => {
+      setWon(false);
+    });
+    game.addEventListener("win", (e) => {
+      setWon(true);
     });
   }, [size]);
 
@@ -74,6 +85,31 @@ function App() {
   ) {
     game.playHuman(orientation, x, y);
   }
+
+  const { width, height } = useWindowSize();
+
+  const effect = useMemo(() => {
+    if (won) {
+      return (
+        <Confetti
+          numberOfPieces={500}
+          width={width}
+          height={height}
+          colors={["red"]}
+        />
+      );
+    } else if (won === false) {
+      return (
+        <Confetti
+          numberOfPieces={500}
+          width={width}
+          height={height}
+          colors={["blue"]}
+        />
+      );
+    }
+    return null;
+  }, [won]);
 
   return (
     <div className="App">
@@ -106,7 +142,7 @@ function App() {
                   ${totalRatio * x * parts} ,${
                   (borderSizeRatio + spaceSizeRatio + totalRatio * y) * parts
                 } 
-
+                
                 ${(totalRatio * x + 0.5 * borderSizeRatio) * parts} ,${
                   (borderSizeRatio +
                     spaceSizeRatio +
@@ -117,7 +153,7 @@ function App() {
                 ${(totalRatio * x + borderSizeRatio) * parts},${
                   (borderSizeRatio + spaceSizeRatio + totalRatio * y) * parts
                 }
-
+                
                 ${(totalRatio * x + borderSizeRatio) * parts},${
                   (y * totalRatio +
                     cellSizeRatio +
@@ -125,26 +161,27 @@ function App() {
                     spaceSizeRatio) *
                   parts
                 } 
-
-                ${(totalRatio * x + 0.5 * borderSizeRatio) * parts},${
+                  
+                  ${(totalRatio * x + 0.5 * borderSizeRatio) * parts},${
                   (y * totalRatio +
                     cellSizeRatio +
                     1.5 * borderSizeRatio +
                     spaceSizeRatio) *
                   parts
                 } 
-
-                ${totalRatio * x * parts},${
+                    
+                    ${totalRatio * x * parts},${
                   (y * totalRatio +
                     cellSizeRatio +
                     borderSizeRatio +
                     spaceSizeRatio) *
                   parts
                 } 
-                `}
+                  `}
                 fill={cell === 0 ? "gray" : cell === 1 ? "red" : "blue"}
                 style={{
                   cursor: "pointer",
+                  transition: "fill .5s",
                 }}
                 onClick={() => handleCLick("vertical", x, y)}
               />
@@ -159,12 +196,12 @@ function App() {
                   ${
                     (borderSizeRatio + spaceSizeRatio + totalRatio * x) * parts
                   } ,${totalRatio * y * parts} 
-
+                  
                   ${
                     (0.5 * borderSizeRatio + spaceSizeRatio + totalRatio * x) *
                     parts
                   } ,${(totalRatio * y + 0.5 * borderSizeRatio) * parts} 
-
+                  
                   ${
                     (borderSizeRatio + spaceSizeRatio + totalRatio * x) * parts
                   } ,${(totalRatio * y + borderSizeRatio) * parts} 
@@ -185,17 +222,18 @@ function App() {
                     parts
                   },${(totalRatio * y + 0.5 * borderSizeRatio) * parts}
 
-                  ${
-                    (borderSizeRatio +
-                      spaceSizeRatio +
-                      cellSizeRatio +
-                      totalRatio * x) *
-                    parts
-                  },${totalRatio * y * parts} 
+                    ${
+                      (borderSizeRatio +
+                        spaceSizeRatio +
+                        cellSizeRatio +
+                        totalRatio * x) *
+                      parts
+                    },${totalRatio * y * parts} 
                 `}
                 fill={cell === 0 ? "gray" : cell === 1 ? "red" : "blue"}
                 style={{
                   cursor: "pointer",
+                  transition: "fill .5s",
                 }}
                 onClick={() => handleCLick("horizontal", x, y)}
               />
@@ -221,11 +259,15 @@ function App() {
                 width={parts * cellSizeRatio}
                 height={parts * cellSizeRatio}
                 fill={cell === 0 ? "transparent" : cell === 1 ? "red" : "blue"}
+                style={{
+                  transition: "fill .5s",
+                }}
               />
             );
           });
         })}
       </svg>
+      {effect}
     </div>
   );
 }
