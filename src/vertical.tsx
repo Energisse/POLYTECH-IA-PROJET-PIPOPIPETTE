@@ -52,6 +52,7 @@ export default function Vertical({
       } 
                   `}
       fill={cell === 0 ? "gray" : cell === 1 ? "red" : "blue"}
+      fillOpacity={cell === 0 ? 0.5 : 1}
       style={{
         cursor: "pointer",
         transition: "fill .5s",

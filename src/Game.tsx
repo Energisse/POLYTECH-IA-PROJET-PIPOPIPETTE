@@ -7,18 +7,17 @@ import Horizontal from "./horizontal";
 import GameConstructor, { GameMode } from "./utils/game";
 import Vertical from "./vertical";
 
-const { cellSizeRatio, spaceSizeRatio, borderSizeRatio,taille } = config;
+const { cellSizeRatio, spaceSizeRatio, borderSizeRatio, taille } = config;
 
 let game: GameConstructor;
 
-function Game({size,mode}: {size:number,mode:GameMode}) {
-
-  const [verticals, setVerticals] = useState<Array<Array<number>>>( []);
+function Game({ size, mode }: { size: number; mode: GameMode }) {
+  const [verticals, setVerticals] = useState<Array<Array<number>>>([]);
   const [horizontals, setHorizontals] = useState<Array<Array<number>>>([]);
   const [cells, setCells] = useState<Array<Array<number>>>([]);
   const [score, setScore] = useState([0, 0]);
   const [won, setWon] = useState<null | boolean>(null);
-  const [tour, setTour] = useState(0)
+  const [tour, setTour] = useState(0);
 
   const parts = useMemo(() => {
     return (
@@ -39,7 +38,6 @@ function Game({size,mode}: {size:number,mode:GameMode}) {
     setWon(null);
 
     game.board.addEventListener("boardChange", (e) => {
-      console.log("boardChange");
       const { verticals, horizontals, cells } = (
         e as CustomEvent<{
           verticals: number[][];
@@ -63,7 +61,7 @@ function Game({size,mode}: {size:number,mode:GameMode}) {
 
     return () => {
       game.stop();
-    }
+    };
   }, [size]);
 
   function handleCLick(
@@ -114,10 +112,30 @@ function Game({size,mode}: {size:number,mode:GameMode}) {
           </div>
         );
       })}
-      
+
       <svg width={taille} height={taille} viewBox={`0,0,${taille},${taille}`}>
-        {verticals.map((row, y) => row.map((cell, x) => <Vertical x={x} y={y} parts={parts} cell={cell} handleCLick={handleCLick} />))}
-        {horizontals.map((row, y) =>  row.map((cell, x) => <Horizontal x={x} y={y} parts={parts} cell={cell} handleCLick={handleCLick} />))}
+        {verticals.map((row, y) =>
+          row.map((cell, x) => (
+            <Vertical
+              x={x}
+              y={y}
+              parts={parts}
+              cell={cell}
+              handleCLick={handleCLick}
+            />
+          ))
+        )}
+        {horizontals.map((row, y) =>
+          row.map((cell, x) => (
+            <Horizontal
+              x={x}
+              y={y}
+              parts={parts}
+              cell={cell}
+              handleCLick={handleCLick}
+            />
+          ))
+        )}
         {cells.map((row, y) => {
           return row.map((cell, x) => {
             return (
