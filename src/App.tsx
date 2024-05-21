@@ -1,4 +1,11 @@
-import { Button, Slider } from "@mui/material";
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Slider,
+} from "@mui/material";
 import { useState } from "react";
 import "./App.css";
 import Game from "./Game";
@@ -8,6 +15,8 @@ function App() {
   const [size, setSize] = useState<number>(3);
 
   const [mode, setMode] = useState<GameMode | null>(null);
+
+  const [ia, setIa] = useState<"minimax" | "alphabeta" | "mcts">("minimax");
 
   const handleChange = (event: Event, newValue: number | number[]) => {
     setSize(newValue as number);
@@ -33,16 +42,35 @@ function App() {
             Joueur contre IA
           </Button>
           <Button variant="contained" onClick={() => setMode(GameMode["IAv1"])}>
-          IA contre Joueur
+            IA contre Joueur
           </Button>
-          <Button variant="contained" onClick={() => setMode(GameMode["IAvIA"])}>
+          <Button
+            variant="contained"
+            onClick={() => setMode(GameMode["IAvIA"])}
+          >
             IA contre IA
           </Button>
+          <FormControl >
+            <InputLabel id="demo-simple-select-label">IA</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={ia}
+              label="Ia"
+              onChange={(e) =>
+                setIa(e.target.value as "minimax" | "alphabeta" | "mcts")
+              }
+            >
+              <MenuItem value={"minimax"}>minimax</MenuItem>
+              <MenuItem value={"alphabeta"}>alphabeta</MenuItem>
+              <MenuItem value={"mcts"}>mcts</MenuItem>
+            </Select>
+          </FormControl>
         </>
       ) : (
         <>
           <Button onClick={() => setMode(null)}>Retour</Button>
-          <Game size={size} mode={mode}/>
+          <Game size={size} mode={mode} ia={ia} />
         </>
       )}
     </div>

@@ -11,7 +11,7 @@ const { cellSizeRatio, spaceSizeRatio, borderSizeRatio, taille } = config;
 
 let game: GameConstructor;
 
-function Game({ size, mode }: { size: number; mode: GameMode }) {
+function Game({ size, mode,ia }: { size: number; mode: GameMode,ia: "minimax" | "alphabeta" | "mcts"}) {
   const [verticals, setVerticals] = useState<Array<Array<number>>>([]);
   const [horizontals, setHorizontals] = useState<Array<Array<number>>>([]);
   const [cells, setCells] = useState<Array<Array<number>>>([]);
@@ -29,7 +29,7 @@ function Game({ size, mode }: { size: number; mode: GameMode }) {
   }, [size]);
 
   useEffect(() => {
-    game = new GameConstructor(size, mode);
+    game = new GameConstructor(size, mode,ia);
     setVerticals([...game.board.getVerticals()]);
     setHorizontals([...game.board.getHorizontals()]);
     setCells([...game.board.getCells()]);

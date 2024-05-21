@@ -1,24 +1,25 @@
 import { Board } from "./game";
 
-export default function mcts(board: Board, player: number, iterations: number) {
-    const root = new Node(board, player);
+export default function mcts(boardOrNode: Board|MctsNode, player: number, iterations: number) {
+    let root = boardOrNode instanceof MctsNode ? boardOrNode : new MctsNode(boardOrNode, player);
     while (root.getNumberVisited() < iterations) {
         root.run();
     }
-
+    console.log(root)
     return root.getBestChild();
 }
 
-class Node {
-    private wins: number;
-    private visits: number;
-    private nodes: Map<"vertical" | "horizontal", Map<number, Map<number, Node>>>;
-    private parent: Node | null;
+
+export class MctsNode {
+    public wins: number;
+    public visits: number;
+    private nodes: Map<"vertical" | "horizontal", Map<number, Map<number, MctsNode>>>;
+    public parent: MctsNode | null;
     private board: Board;
     private player: number;
     private generator: Generator<{ orientation: "vertical" | "horizontal"; x: number; y: number, board: Board }, void, unknown>;
 
-    constructor(board: Board, player: number, parent: Node | null = null) {
+    constructor(board: Board, player: number, parent: MctsNode | null = null) {
         this.wins = 0;
         this.visits = 0;
         this.nodes = new Map();
@@ -34,24 +35,31 @@ class Node {
 
     public run() {
         if (this.board.isFinished()) {
-            this.backpropagation(this.simulate());
+            for(let i = 0; i < 100; i++){
+                this.backpropagation(this.simulate());
+            }
             return
         }
 
-        if (this.expansion()) return;
-
-        const { bestNode } = this.selection();
-        bestNode.run();
+        let newChild = this.expansion()
+        if (newChild){
+            for(let i = 0; i < 100; i++){
+                newChild.backpropagation(newChild.simulate());
+            }
+        }
+        else{
+            const { bestNode } = this.selection();
+            bestNode.run();
+        }
     }
 
     private selection(): {
-        bestNode: Node;
+        bestNode: MctsNode;
         x: number;
         y: number;
         orientation: "vertical" | "horizontal";
-
     } {
-        let bestNode: Node | null = null;
+        let bestNode: MctsNode | null = null;
         let x: number = 0;
         let y: number = 0;
         let orientation: "vertical" | "horizontal" = "vertical";
@@ -90,7 +98,7 @@ class Node {
         if (done) return false;
 
         const { orientation, x, y, board } = value;
-        const child = new Node(board, this.player, this);
+        const child = new MctsNode(board, this.player, this);
         let mapOrientation = this.nodes.get(orientation);
         if (!mapOrientation) {
             mapOrientation = new Map();
@@ -105,9 +113,7 @@ class Node {
 
         mapX.set(y, child);
 
-        child.backpropagation(child.simulate());
-
-        return true;
+        return child;
     }
 
     private backpropagation(won: boolean) {
@@ -121,7 +127,7 @@ class Node {
     }
 
     public getBestChild() {
-        let bestNode: Node | null = null;
+        let bestNode: MctsNode | null = null;
         let x: number = 0;
         let y: number = 0;
         let orientation: "vertical" | "horizontal" = "vertical";
@@ -140,7 +146,7 @@ class Node {
                 });
             });
         });
-        return { bestNode, x, y, orientation };
+        return { bestNode:bestNode!, x, y, orientation };
     }
 
     getNumberVisited() {

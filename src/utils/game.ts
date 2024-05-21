@@ -1,6 +1,6 @@
 import nigamax from "./nigamax";
 import negamax from "./negamax";
-import mcts from "./mcts";
+import mcts, { MctsNode } from "./mcts";
 
 export enum GameMode {
   "1v1",
@@ -12,12 +12,34 @@ export enum GameMode {
 export default class Game extends EventTarget {
   private gameMode: GameMode;
   readonly board: Board;
+  private ia: any
   private stoped: boolean = false;
 
-  constructor(size: number, gameMode: GameMode) {
+  constructor(size: number, gameMode: GameMode,ia?: "minimax" | "alphabeta" | "mcts") {
     super();
     this.gameMode = gameMode;
     this.board = new Board(size);
+    switch (ia) {
+      case "minimax":
+        this.ia = ()=>nigamax(this.board, 2, true, this.board.getTour() - 1);
+        break;
+      case "alphabeta":
+        this.ia = ()=>negamax(this.board, 2, true, this.board.getTour() - 1);
+        break;
+      case "mcts":
+        this.ia = (()=>{
+          let lastNode: MctsNode |null = null;
+          return ()=>{
+            const result = mcts(lastNode || this.board, this.board.getTour() - 1, 1_000);
+            lastNode = result.bestNode;
+            lastNode.parent = null;
+            return result;
+          };
+        })()
+        break;
+
+    }
+
     if (this.gameMode === GameMode.IAvIA) {
       this.iaLoop();
     }
@@ -61,20 +83,15 @@ export default class Game extends EventTarget {
   public iaPlay() {
     return new Promise<void>((resolve) => {
       const tour = this.board.getTour();
-      // const { x, y, orientation } = minimax(this, 3, true,this.board.getTour() - 1);
-      // const { x, y, orientation } = negamax(this, 3, true,this.board.getTour() - 1);
-
       const start = window.performance.now();
-      // const { x, y, orientation } = nigamax(this.board, 2, true, this.board.getTour() - 1);
-      const { x, y, orientation } = mcts(this.board, this.board.getTour() - 1, 10_000);
+      const coup: { x: number; y: number; orientation: "vertical" | "horizontal" } = this.ia();
       const end = window.performance.now();
       setTimeout(() => {
-        this.board.play(orientation, x, y);
+        this.board.play(coup.orientation, coup.x, coup.y);
         if (this.board.getTour() === tour && !this.board.isFinished()) this.iaPlay();
         resolve()
       }, 500 - (end - start));
-
-    });
+      });
   }
 }
 
