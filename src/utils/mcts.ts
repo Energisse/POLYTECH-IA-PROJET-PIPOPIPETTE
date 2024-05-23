@@ -1,14 +1,5 @@
 import { Board } from "./game";
 
-export default function mcts(boardOrNode: Board|MctsNode, player: number, iterations: number) {
-    let root = boardOrNode instanceof MctsNode ? boardOrNode : new MctsNode(boardOrNode, player);
-    while (root.getNumberVisited() < iterations) {
-        root.run();
-    }
-    console.log(root)
-    return root.getBestChild();
-}
-
 
 export class MctsNode {
     public wins: number;
@@ -17,37 +8,38 @@ export class MctsNode {
     public parent: MctsNode | null;
     private board: Board;
     private player: number;
+    private simulation: number;
+    private c: number
     private generator: Generator<{ orientation: "vertical" | "horizontal"; x: number; y: number, board: Board }, void, unknown>;
 
-    constructor(board: Board, player: number, parent: MctsNode | null = null) {
+    constructor(board: Board, player: number, simulation: number, c: number, parent: MctsNode | null = null) {
         this.wins = 0;
         this.visits = 0;
         this.nodes = new Map();
         this.parent = parent;
         this.generator = board.getNodes();
         this.board = board;
+        this.simulation = simulation;
         this.player = player;
+        this.c = c;
     }
 
-    public mcts() {
-
-    }
 
     public run() {
         if (this.board.isFinished()) {
-            for(let i = 0; i < 100; i++){
+            for (let i = 0; i < this.simulation; i++) {
                 this.backpropagation(this.simulate());
             }
             return
         }
 
         let newChild = this.expansion()
-        if (newChild){
-            for(let i = 0; i < 100; i++){
+        if (newChild) {
+            for (let i = 0; i < this.simulation; i++) {
                 newChild.backpropagation(newChild.simulate());
             }
         }
-        else{
+        else {
             const { bestNode } = this.selection();
             bestNode.run();
         }
@@ -67,7 +59,7 @@ export class MctsNode {
         this.nodes.forEach((row, _orientation) => {
             row.forEach((cell, _x) => {
                 cell.forEach((node, _y) => {
-                    const value = node.wins / node.visits + 1.41421356237 + Math.sqrt(2 * Math.log(this.visits) / node.visits);
+                    const value = node.wins / node.visits + this.c + Math.sqrt(2 * Math.log(this.visits) / node.visits);
                     if (value > bestValue) {
                         bestValue = value;
                         orientation = _orientation as "vertical" | "horizontal";
@@ -98,7 +90,7 @@ export class MctsNode {
         if (done) return false;
 
         const { orientation, x, y, board } = value;
-        const child = new MctsNode(board, this.player, this);
+        const child = new MctsNode(board, this.player, this.simulation, this.c, this);
         let mapOrientation = this.nodes.get(orientation);
         if (!mapOrientation) {
             mapOrientation = new Map();
@@ -146,7 +138,7 @@ export class MctsNode {
                 });
             });
         });
-        return { bestNode:bestNode!, x, y, orientation };
+        return { bestNode: bestNode!, x, y, orientation };
     }
 
     getNumberVisited() {

@@ -2,21 +2,46 @@ import { useEffect, useMemo, useState } from "react";
 import Confetti from "react-confetti";
 import useWindowSize from "react-use/lib/useWindowSize";
 import "./App.css";
+import Cell from "./Cell";
 import config from "./config.json";
 import Horizontal from "./horizontal";
-import GameConstructor, { GameMode } from "./utils/game";
 import Vertical from "./vertical";
 
 const { cellSizeRatio, spaceSizeRatio, borderSizeRatio, taille } = config;
 
-let game: GameConstructor;
+Worker.prototype.emit = function (...data) {
+  this.postMessage({ type: data[0], data: data[1] });
+};
 
-function Game({ size, mode,ia }: { size: number; mode: GameMode,ia: "minimax" | "alphabeta" | "mcts"}) {
+let game: Worker | null = null;
+
+function Game({
+  size,
+  players,
+}: {
+  size: number;
+  players: [
+    {
+      type: "human" | "minimax" | "alphabeta" | "mcts" | "random";
+      depth: number;
+      iteration: number;
+      simulation: number;
+      c: number;
+    },
+    {
+      type: "human" | "minimax" | "alphabeta" | "mcts" | "random";
+      depth: number;
+      iteration: number;
+      simulation: number;
+      c: number;
+    }
+  ];
+}) {
   const [verticals, setVerticals] = useState<Array<Array<number>>>([]);
   const [horizontals, setHorizontals] = useState<Array<Array<number>>>([]);
   const [cells, setCells] = useState<Array<Array<number>>>([]);
   const [score, setScore] = useState([0, 0]);
-  const [won, setWon] = useState<null | boolean>(null);
+  const [winner, setWinner] = useState<number>(0);
   const [tour, setTour] = useState(0);
 
   const parts = useMemo(() => {
@@ -29,22 +54,17 @@ function Game({ size, mode,ia }: { size: number; mode: GameMode,ia: "minimax" | 
   }, [size]);
 
   useEffect(() => {
-    game = new GameConstructor(size, mode,ia);
-    setVerticals([...game.board.getVerticals()]);
-    setHorizontals([...game.board.getHorizontals()]);
-    setCells([...game.board.getCells()]);
-    setScore([...game.board.getScore()]);
-    setTour(game.board.getTour());
-    setWon(null);
+    if (game) game.terminate();
+    setWinner(0);
+    game = new Worker(new URL("./worker.ts", import.meta.url));
 
-    game.board.addEventListener("boardChange", (e) => {
-      const { verticals, horizontals, cells } = (
-        e as CustomEvent<{
-          verticals: number[][];
-          horizontals: number[][];
-          cells: number[][];
-        }>
-      ).detail;
+    game.addEventListener("message", ({ data: { data, type } }) => {
+      console.log(type, data);
+      game!.dispatchEvent(new CustomEvent(type, { detail: data }));
+    });
+
+    game.addEventListener("change", (e) => {
+      const { verticals, horizontals, cells, score, tour } = e.detail;
       setVerticals([...verticals]);
       setHorizontals([...horizontals]);
       setCells([...cells]);
@@ -52,42 +72,46 @@ function Game({ size, mode,ia }: { size: number; mode: GameMode,ia: "minimax" | 
       setTour(tour);
     });
 
-    game.board.addEventListener("loose", (e) => {
-      setWon(false);
+    game.addEventListener("end", (e) => {
+      setWinner(e.detail.winner);
     });
-    game.board.addEventListener("win", (e) => {
-      setWon(true);
+
+    game.emit("start", {
+      player1: players[0],
+      player2: players[1],
+      size,
     });
 
     return () => {
-      game.stop();
+      game?.terminate();
+      game = null;
     };
-  }, [size]);
+  }, [size, players]);
 
   function handleCLick(
     orientation: "vertical" | "horizontal",
     x: number,
     y: number
   ) {
-    game.playHuman(orientation, x, y);
+    game?.emit("play", { x, y, orientation });
   }
 
   const { width, height } = useWindowSize();
 
   const effect = useMemo(() => {
-    if (won) {
+    if (winner === 1) {
       return (
         <Confetti
-          numberOfPieces={500}
+          numberOfPieces={1000}
           width={width}
           height={height}
           colors={["red"]}
         />
       );
-    } else if (won === false) {
+    } else if (winner === 2) {
       return (
         <Confetti
-          numberOfPieces={500}
+          numberOfPieces={1000}
           width={width}
           height={height}
           colors={["blue"]}
@@ -95,7 +119,7 @@ function Game({ size, mode,ia }: { size: number; mode: GameMode,ia: "minimax" | 
       );
     }
     return null;
-  }, [won]);
+  }, [height, width, winner]);
 
   return (
     <div className="App">
@@ -113,7 +137,7 @@ function Game({ size, mode,ia }: { size: number; mode: GameMode,ia: "minimax" | 
         );
       })}
 
-      <svg width={taille} height={taille} viewBox={`0,0,${taille},${taille}`}>
+      <svg width="50%" height="50%" viewBox={`0,0,${taille},${taille}`}>
         {verticals.map((row, y) =>
           row.map((cell, x) => (
             <Vertical
@@ -137,30 +161,9 @@ function Game({ size, mode,ia }: { size: number; mode: GameMode,ia: "minimax" | 
           ))
         )}
         {cells.map((row, y) => {
-          return row.map((cell, x) => {
-            return (
-              <rect
-                x={
-                  (borderSizeRatio + spaceSizeRatio) * parts +
-                  x *
-                    (borderSizeRatio + 2 * spaceSizeRatio + cellSizeRatio) *
-                    parts
-                }
-                y={
-                  (borderSizeRatio + spaceSizeRatio) * parts +
-                  y *
-                    (borderSizeRatio + 2 * spaceSizeRatio + cellSizeRatio) *
-                    parts
-                }
-                width={parts * cellSizeRatio}
-                height={parts * cellSizeRatio}
-                fill={cell === 0 ? "transparent" : cell === 1 ? "red" : "blue"}
-                style={{
-                  transition: "fill .5s",
-                }}
-              />
-            );
-          });
+          return row.map((cell, x) => (
+            <Cell x={x} y={y} parts={parts} cell={cell} />
+          ));
         })}
       </svg>
       {effect}

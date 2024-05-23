@@ -1,107 +1,30 @@
-import nigamax from "./nigamax";
-import negamax from "./negamax";
-import mcts, { MctsNode } from "./mcts";
-
-export enum GameMode {
-  "1v1",
-  "1vIA",
-  "IAv1",
-  "IAvIA",
-}
+import { Player } from "./player";
 
 export default class Game extends EventTarget {
-  private gameMode: GameMode;
   readonly board: Board;
-  private ia: any
-  private stoped: boolean = false;
+  private players: [Player, Player];
 
-  constructor(size: number, gameMode: GameMode,ia?: "minimax" | "alphabeta" | "mcts") {
+  constructor(size: number, player1: Player, player2: Player) {
     super();
-    this.gameMode = gameMode;
     this.board = new Board(size);
-    switch (ia) {
-      case "minimax":
-        this.ia = ()=>nigamax(this.board, 2, true, this.board.getTour() - 1);
-        break;
-      case "alphabeta":
-        this.ia = ()=>negamax(this.board, 2, true, this.board.getTour() - 1);
-        break;
-      case "mcts":
-        this.ia = (()=>{
-          let lastNode: MctsNode |null = null;
-          return ()=>{
-            const result = mcts(lastNode || this.board, this.board.getTour() - 1, 1_000);
-            lastNode = result.bestNode;
-            lastNode.parent = null;
-            return result;
-          };
-        })()
-        break;
-
-    }
-
-    if (this.gameMode === GameMode.IAvIA) {
-      this.iaLoop();
-    }
-    if (this.gameMode === GameMode.IAv1) {
-      this.iaPlay();
-    }
+    this.players = [player1, player2];
+    this.play();
   }
 
-  private async iaLoop() {
-    while (this.board.isFinished() === false && this.stoped === false) {
-      await this.iaPlay();
-    }
-  }
-
-  public stop() {
-    this.stoped = true;
-  }
-
-  public playHuman(
-    orientation: "vertical" | "horizontal",
-    x: number,
-    y: number
-  ): void {
-    switch (this.gameMode) {
-      case GameMode["1v1"]:
-        this.board.play(orientation, x, y);
-        break;
-      case GameMode["1vIA"]:
-        if (this.board.getTour() === 2) return;
-        this.board.play(orientation, x, y);
-        if (this.board.getTour() === 2 && !this.board.isFinished()) this.iaPlay();
-        break;
-      case GameMode["IAv1"]:
-        if (this.board.getTour() === 1) return;
-        this.board.play(orientation, x, y);
-        if (this.board.getTour() === 1 && !this.board.isFinished()) this.iaPlay();
-        break;
-    }
-  }
-
-  public iaPlay() {
-    return new Promise<void>((resolve) => {
-      const tour = this.board.getTour();
-      const start = window.performance.now();
-      const coup: { x: number; y: number; orientation: "vertical" | "horizontal" } = this.ia();
-      const end = window.performance.now();
-      setTimeout(() => {
-        this.board.play(coup.orientation, coup.x, coup.y);
-        if (this.board.getTour() === tour && !this.board.isFinished()) this.iaPlay();
-        resolve()
-      }, 500 - (end - start));
-      });
+  public async play() {
+    await this.players[this.board.getTour() - 1].play(this.board, this.board.getTour() - 1).then((coup) => {
+      this.board.play(coup.orientation, coup.x, coup.y);
+      if (!this.board.isFinished()) this.play();
+    });
   }
 }
-
 
 export class Board extends EventTarget {
   private cells: number[][] = [];
   private verticals: number[][] = [];
   private horizontals: number[][] = [];
 
-  private score: number[] = [0, 0];
+  private score: [number, number] = [0, 0];
 
   private tour: number = 1;
 
@@ -128,7 +51,7 @@ export class Board extends EventTarget {
     return this.horizontals;
   }
 
-  public getScore(): number[] {
+  public getScore(): [number, number] {
     return this.score;
   }
 
@@ -163,16 +86,6 @@ export class Board extends EventTarget {
       if (result) cells.push(result);
     }
 
-    this.dispatchEvent(
-      new CustomEvent("boardChange", {
-        detail: {
-          verticals: this.verticals,
-          horizontals: this.horizontals,
-          cells: this.cells,
-        },
-      })
-    );
-
     if (!cells.length) {
       this.tour = this.tour === 1 ? 2 : 1;
     } else {
@@ -181,15 +94,22 @@ export class Board extends EventTarget {
       cells.forEach((cell) => {
         this.cells[cell[1]][cell[0]] = this.tour;
       });
-
-      this.dispatchEvent(new CustomEvent("score", { detail: this.score }));
     }
 
+    this.dispatchEvent(
+      new CustomEvent("boardChange", {
+        detail: {
+          verticals: this.verticals,
+          horizontals: this.horizontals,
+          cells: this.cells,
+          score: this.score,
+        },
+      })
+    );
+
+
     if (this.isFinished()) {
-      if (this.score[0] > this.score[1])
-        this.dispatchEvent(new CustomEvent("win"));
-      else if (this.score[0] < this.score[1])
-        this.dispatchEvent(new CustomEvent("loose"));
+      this.dispatchEvent(new CustomEvent("end", { detail: { winner: this.score[0] > this.score[1] ? 1 : 2 } }));
     }
   }
 
@@ -286,85 +206,85 @@ export class Board extends EventTarget {
     }
   }
 
-  // public *getNodes(): Generator<
-  //   {
-  //     x: number;
-  //     y: number;
-  //     board: Board;
-  //     orientation: "vertical" | "horizontal";
-  //   },
-  //   void,
-  //   void
-  // > {
-  //   const verticals = this.getNodesVertical();
-  //   const horizontals = this.getNodesHorizontal();
+  public *getNodes(): Generator<
+    {
+      x: number;
+      y: number;
+      board: Board;
+      orientation: "vertical" | "horizontal";
+    },
+    void,
+    void
+  > {
+    const verticals = this.getNodesVertical();
+    const horizontals = this.getNodesHorizontal();
 
-  //   let doneHorizontal = false;
-  //   let doneVertical = false;
+    let doneHorizontal = false;
+    let doneVertical = false;
 
-  //   while (!doneHorizontal && !doneVertical) {
-  //     if (Math.random() < 0.5) {
-  //       const { value, done } = verticals.next();
-  //       if (done) doneVertical = true;
-  //       else yield value;
-  //     } else {
-  //       const { value, done } = horizontals.next();
-  //       if (done) doneHorizontal = true;
-  //       else yield value;
-  //     }
-  //   }
-
-  //   if (!doneHorizontal) {
-  //     for (const value of horizontals) {
-  //       yield value;
-  //     }
-  //   }
-
-  //   if (!doneVertical) {
-  //     for (const value of verticals) {
-  //       yield value;
-  //     }
-  //   }
-  // }
-
-  public *getNodes(): Generator<{
-    x: number;
-    y: number;
-    board: Board;
-    orientation: "vertical" | "horizontal";
-  }, void, void> {
-    for (let y = 0; y < this.verticals.length; y++) {
-      for (let x = 0; x < this.verticals[y].length; x++) {
-        if (this.verticals[y][x] === 0) {
-          const board = this.copy();
-          const lastTour = board.tour;
-          board.play("vertical", x, y);
-          if (board.tour === lastTour && !board.isFinished()) {
-            for (const node of board.getNodes()) {
-              yield { ...node, x, y, orientation: "vertical" };
-            }
-          }
-          else yield { x, y, board, orientation: "vertical" };
-        }
+    while (!doneHorizontal && !doneVertical) {
+      if (Math.random() < 0.5) {
+        const { value, done } = verticals.next();
+        if (done) doneVertical = true;
+        else yield value;
+      } else {
+        const { value, done } = horizontals.next();
+        if (done) doneHorizontal = true;
+        else yield value;
       }
     }
 
-    for (let y = 0; y < this.horizontals.length; y++) {
-      for (let x = 0; x < this.horizontals[y].length; x++) {
-        if (this.horizontals[y][x] === 0) {
-          const board = this.copy();
-          const lastTour = board.tour;
-          board.play("horizontal", x, y);
-          if (board.tour === lastTour && !board.isFinished()) {
-            for (const node of board.getNodes()) {
-              yield { ...node, x, y, orientation: "horizontal" };
-            }
-          }
-          else yield { x, y, board, orientation: "horizontal" };
-        }
+    if (!doneHorizontal) {
+      for (const value of horizontals) {
+        yield value;
+      }
+    }
+
+    if (!doneVertical) {
+      for (const value of verticals) {
+        yield value;
       }
     }
   }
+
+  // public *getNodes(): Generator<{
+  //   x: number;
+  //   y: number;
+  //   board: Board;
+  //   orientation: "vertical" | "horizontal";
+  // }, void, void> {
+  //   for (let y = 0; y < this.verticals.length; y++) {
+  //     for (let x = 0; x < this.verticals[y].length; x++) {
+  //       if (this.verticals[y][x] === 0) {
+  //         const board = this.copy();
+  //         const lastTour = board.tour;
+  //         board.play("vertical", x, y);
+  //         if (board.tour === lastTour && !board.isFinished()) {
+  //           for (const node of board.getNodes()) {
+  //             yield { ...node, x, y, orientation: "vertical" };
+  //           }
+  //         }
+  //         else yield { x, y, board, orientation: "vertical" };
+  //       }
+  //     }
+  //   }
+
+  //   for (let y = 0; y < this.horizontals.length; y++) {
+  //     for (let x = 0; x < this.horizontals[y].length; x++) {
+  //       if (this.horizontals[y][x] === 0) {
+  //         const board = this.copy();
+  //         const lastTour = board.tour;
+  //         board.play("horizontal", x, y);
+  //         if (board.tour === lastTour && !board.isFinished()) {
+  //           for (const node of board.getNodes()) {
+  //             yield { ...node, x, y, orientation: "horizontal" };
+  //           }
+  //         }
+  //         else yield { x, y, board, orientation: "horizontal" };
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 
