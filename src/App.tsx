@@ -3,7 +3,14 @@ import { useMemo, useState } from "react";
 import "./App.css";
 import Game from "./Game";
 
-const playerList = ["human", "minimax", "alphabeta", "mcts", "random"] as const;
+const playerList = [
+  "human",
+  "minimax",
+  "alphabeta",
+  "mcts",
+  "random",
+  "fastest",
+] as const;
 
 export type playerType = (typeof playerList)[number];
 

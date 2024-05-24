@@ -1,6 +1,6 @@
 import { MainToWorkerEventMap } from "./@types/worker";
 import Game from "./utils/game";
-import { AlphaBetaPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, RandomPlayer } from "./utils/player";
+import { AlphaBetaPlayer, FastestPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, RandomPlayer } from "./utils/player";
 
 declare var self: DedicatedWorkerGlobalScope;
 
@@ -9,7 +9,6 @@ DedicatedWorkerGlobalScope.prototype.emit = function (...data) {
 }
 
 self.addEventListener("message", ({ data: { data, type } }) => {
-    console.log(type, data);
     self.dispatchEvent(new CustomEvent(type, {
         detail: data
     }));
@@ -91,6 +90,8 @@ function createPlayer(player: MainToWorkerEventMap["start"]["detail"]["player1"]
             return new AlphaBetaPlayer(player);
         case "mcts":
             return new MctsPlayer(player);
+        case "fastest":
+            return new FastestPlayer(player);
     }
 }
 

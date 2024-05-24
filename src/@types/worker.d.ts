@@ -9,8 +9,14 @@ export interface MainToWorkerEventMap {
             type: "mcts",
             iteration: number,
             simulation: number,
-            c?: number
-        },
+            c: number
+        } | {
+            type: "fastest",
+            depth: number,
+            iteration: number,
+            simulation: number,
+            c: number
+        }
         player2: {
             type: "human" | "random",
         } | {
@@ -20,8 +26,14 @@ export interface MainToWorkerEventMap {
             type: "mcts",
             iteration: number,
             simulation: number,
-            c?: number
-        },
+            c: number
+        } | {
+            type: "fastest",
+            depth: number,
+            iteration: number,
+            simulation: number,
+            c: number
+        }
         size: number
     }>,
     "play": CustomEvent<{

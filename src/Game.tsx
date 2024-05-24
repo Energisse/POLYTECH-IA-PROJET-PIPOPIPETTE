@@ -22,14 +22,14 @@ function Game({
   size: number;
   players: [
     {
-      type: "human" | "minimax" | "alphabeta" | "mcts" | "random";
+      type: "human" | "minimax" | "alphabeta" | "mcts" | "fastest" | "random";
       depth: number;
       iteration: number;
       simulation: number;
       c: number;
     },
     {
-      type: "human" | "minimax" | "alphabeta" | "mcts" | "random";
+      type: "human" | "minimax" | "alphabeta" | "mcts" | "fastest" | "random";
       depth: number;
       iteration: number;
       simulation: number;
@@ -59,7 +59,6 @@ function Game({
     game = new Worker(new URL("./worker.ts", import.meta.url));
 
     game.addEventListener("message", ({ data: { data, type } }) => {
-      console.log(type, data);
       game!.dispatchEvent(new CustomEvent(type, { detail: data }));
     });
 

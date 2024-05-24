@@ -28,15 +28,27 @@ export class Board extends EventTarget {
 
   private tour: number = 1;
 
-  constructor(size: number) {
+  constructor(size: number);
+  constructor(board: { cells: number[][]; verticals: number[][]; horizontals: number[][]; score: [number, number]; tour: number });
+  constructor(BoardOrSize: number | { cells: number[][]; verticals: number[][]; horizontals: number[][]; score: [number, number]; tour: number }) {
     super();
-    this.cells = new Array(size).fill(0).map(() => new Array(size).fill(0));
-    this.verticals = new Array(size)
-      .fill(0)
-      .map(() => new Array(size + 1).fill(0));
-    this.horizontals = new Array(size + 1)
-      .fill(0)
-      .map(() => new Array(size).fill(0));
+    if (typeof BoardOrSize === "number") {
+      this.cells = new Array(BoardOrSize).fill(0).map(() => new Array(BoardOrSize).fill(0));
+      this.verticals = new Array(BoardOrSize)
+        .fill(0)
+        .map(() => new Array(BoardOrSize + 1).fill(0));
+      this.horizontals = new Array(BoardOrSize + 1)
+        .fill(0)
+        .map(() => new Array(BoardOrSize).fill(0));
+      this.score = [0, 0];
+      this.tour = 1;
+    } else {
+      this.cells = BoardOrSize.cells;
+      this.verticals = BoardOrSize.verticals;
+      this.horizontals = BoardOrSize.horizontals;
+      this.score = BoardOrSize.score;
+      this.tour = BoardOrSize.tour;
+    }
   }
 
   public getCells(): number[][] {
