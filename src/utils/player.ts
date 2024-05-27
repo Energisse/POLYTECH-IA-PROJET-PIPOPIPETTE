@@ -9,11 +9,11 @@ interface Coup {
     orientation: "vertical" | "horizontal"
 }
 
-export type Player = {
-    play(board: Board, player: number): Promise<Coup>
+export abstract class Player extends EventTarget {
+    abstract play(board: Board, player: number): Promise<Coup>
 }
 
-export class HumanPlayer extends EventTarget implements Player {
+export class HumanPlayer extends Player {
     play(board: Board, player: number) {
         return new Promise<Coup>((resolve) => {
             this.addEventListener("play", (e: Event) => {
@@ -24,7 +24,7 @@ export class HumanPlayer extends EventTarget implements Player {
     }
 }
 
-export abstract class iaPlayer implements Player {
+export abstract class iaPlayer extends Player {
     async play(board: Board, player: number): Promise<Coup> {
         return (await Promise.all([
             (async (): Promise<Coup> => {
@@ -61,9 +61,10 @@ export class MctsPlayer extends iaPlayer {
     playIa(board: Board, player: number): Promise<Coup> {
         return new Promise<Coup>((resolve) => {
             let root = new MctsNode(board, player, this.simulation, this.c);
-            while (root.getNumberVisited() < this.iteration) {
+            while (root.getNumberVisited() < this.iteration * this.simulation) {
                 root.run();
             }
+            this.dispatchEvent(new CustomEvent("tree", { detail: root }));
             let bestChild = root.getBestChild();
             resolve({ x: bestChild.x, y: bestChild.y, orientation: bestChild.orientation });
         })
@@ -108,7 +109,7 @@ export class FastestPlayer extends iaPlayer {
         const workers: Worker[] = []
 
         return Promise.race(this.ias.map(ia => {
-            return new Promise<[Coup, "minimax" | "alphabeta" | "mcts"]>((resolve) => {
+            return new Promise<[Coup, typeof ia]>((resolve) => {
                 const worker = new Worker(new URL("../playerWorker.ts", import.meta.url));
                 workers.push(worker)
                 worker.postMessage({ board: JSON.parse(JSON.stringify(board)), depth: this.depth, player, type: ia });

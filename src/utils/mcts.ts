@@ -59,7 +59,7 @@ export class MctsNode {
         this.nodes.forEach((row, _orientation) => {
             row.forEach((cell, _x) => {
                 cell.forEach((node, _y) => {
-                    const value = node.wins / node.visits + this.c + Math.sqrt(2 * Math.log(this.visits) / node.visits);
+                    const value = node.wins / node.visits + this.c * Math.sqrt(2 * Math.log(this.visits) / node.visits);
                     if (value > bestValue) {
                         bestValue = value;
                         orientation = _orientation as "vertical" | "horizontal";

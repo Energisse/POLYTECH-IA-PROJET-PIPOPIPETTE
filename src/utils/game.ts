@@ -121,12 +121,13 @@ export class Board extends EventTarget {
 
 
     if (this.isFinished()) {
-      this.dispatchEvent(new CustomEvent("end", { detail: { winner: this.score[0] > this.score[1] ? 1 : 2 } }));
+      const winner = this.score[0] === this.score[1] ? 0 : this.score[0] > this.score[1] ? 1 : 2;
+      this.dispatchEvent(new CustomEvent("end", { detail: { winner } }));
     }
   }
 
   public isFinished() {
-    return this.score[0] >= this.cells.length ** 2 / 2 || this.score[1] >= this.cells.length ** 2 / 2 || this.score[0] + this.score[1] === this.cells.length ** 2;
+    return this.score[0] > this.cells.length ** 2 / 2 || this.score[1] > this.cells.length ** 2 / 2 || this.score[0] + this.score[1] === this.cells.length ** 2;
   }
 
   private check(x: number, y: number): false | [x: number, y: number] {

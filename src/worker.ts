@@ -15,11 +15,55 @@ self.addEventListener("message", ({ data: { data, type } }) => {
 });
 
 let game: Game | null = null;
+
+type Node = {
+    visits: number,
+    wins: number,
+    nodes: Map<string, Map<number, Map<number, Node>>>
+}
+
+type Data = {
+    name: string,
+    children: Data[]
+}
+
+function formatNode(node: Node): Data {
+    const children = new Array<Data>();
+    node.nodes.forEach((row, orientation) => {
+        row.forEach((cell, x) => {
+            cell.forEach((node, y) => {
+                children.push(formatNode(node));
+            });
+        });
+    });
+
+    return {
+        name: `${node.wins}/${node.visits}`,
+        children
+    }
+
+}
+
 self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
     if (game) return;
 
     const player1Instance = createPlayer(player1);
     const player2Instance = createPlayer(player2);
+
+    player1Instance.addEventListener("tree", (e) => {
+        self.emit("tree", {
+            player: 1,
+            tree: formatNode((e as CustomEvent<Node>).detail)
+        });
+    });
+
+    player2Instance.addEventListener("tree", (e) => {
+        self.emit("tree", {
+            player: 2,
+            tree: formatNode((e as CustomEvent<Node>).detail)
+        });
+    });
+
 
     game = new Game(size, player1Instance, player2Instance);
 

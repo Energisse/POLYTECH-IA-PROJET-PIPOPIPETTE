@@ -54,6 +54,7 @@ export interface WorkerToMainEventMap {
     "end": CustomEvent<{
         winner: number
     }>,
+    "tree": CustomEvent<any>
 }
 
 declare global {
