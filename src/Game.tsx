@@ -68,7 +68,7 @@ function Game() {
             key={index}
             style={{
               background:
-                tour === index + 1 ? (index ? "blue" : "red") : "transparent",
+                tour === index ? (index ? "blue" : "red") : "transparent",
             }}
           >
             {index + 1}: {value}

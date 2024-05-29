@@ -102,9 +102,8 @@ export class MctsPlayer extends iaPlayer {
                             if (!currentNode) break;
                         }
                         if (currentNode) {
-                            const value = currentNode.wins / currentNode.visits
-                            if (value > bestValue) {
-                                bestValue = value;
+                            if (currentNode.wins > bestValue) {
+                                bestValue = currentNode.wins;
                                 bestNode = currentNode;
                             }
                         }
