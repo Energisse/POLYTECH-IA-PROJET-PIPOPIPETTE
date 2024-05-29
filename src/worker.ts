@@ -1,5 +1,5 @@
 import { MainToWorkerEventMap } from "./@types/worker";
-import Game from "./utils/game";
+import Game, { playValue, playerValue } from "./utils/game";
 import { AlphaBetaPlayer, FastestPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, RandomPlayer } from "./utils/player";
 
 declare var self: DedicatedWorkerGlobalScope;
@@ -94,7 +94,7 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
     game.board.addEventListener("end", (e) => {
         const { winner } = (
             e as CustomEvent<{
-                winner: number
+                winner: playerValue
             }>
         ).detail;
         self.emit("end", {
@@ -105,9 +105,9 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
     game.board.addEventListener("boardChange", (e) => {
         const { verticals, horizontals, cells } = (
             e as CustomEvent<{
-                verticals: number[][];
-                horizontals: number[][];
-                cells: number[][];
+                verticals: playValue[][];
+                horizontals: playValue[][];
+                cells: playValue[][];
             }>
         ).detail;
 

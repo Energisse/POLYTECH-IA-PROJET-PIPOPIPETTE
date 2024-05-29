@@ -1,3 +1,5 @@
+import { playValue, playerValue } from "../utils/game"
+
 export interface MainToWorkerEventMap {
     "start": CustomEvent<{
         player1: {
@@ -45,14 +47,14 @@ export interface MainToWorkerEventMap {
 
 export interface WorkerToMainEventMap {
     "change": CustomEvent<{
-        verticals: number[][],
-        horizontals: number[][],
+        verticals: playValue[][],
+        horizontals: playValue[][],
         score: [number, number],
-        tour: number,
-        cells: number[][]
+        tour: playerValue,
+        cells: playValue[][]
     }>,
     "end": CustomEvent<{
-        winner: number
+        winner: playerValue
     }>,
     "tree": CustomEvent<any>
 }

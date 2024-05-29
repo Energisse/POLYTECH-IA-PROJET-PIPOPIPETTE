@@ -38,7 +38,7 @@ function Game() {
   const { width, height } = useWindowSize();
 
   const effect = useMemo(() => {
-    if (winner === 1) {
+    if (winner === 0) {
       return (
         <Confetti
           numberOfPieces={1000}
@@ -47,7 +47,7 @@ function Game() {
           colors={["red"]}
         />
       );
-    } else if (winner === 2) {
+    } else if (winner === 1) {
       return (
         <Confetti
           numberOfPieces={1000}

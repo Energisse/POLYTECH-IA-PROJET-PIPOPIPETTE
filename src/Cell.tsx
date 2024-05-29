@@ -25,7 +25,7 @@ export default function Cell({
       }
       width={parts * cellSizeRatio}
       height={parts * cellSizeRatio}
-      fill={cell === 0 ? "transparent" : cell === 1 ? "red" : "blue"}
+      fill={cell === -1 ? "transparent" : cell === 0 ? "red" : "blue"}
       style={{
         transition: "fill .5s",
       }}

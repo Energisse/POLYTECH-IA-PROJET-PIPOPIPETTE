@@ -7,12 +7,12 @@ export class MctsNode {
     private nodes: Map<"vertical" | "horizontal", Map<number, Map<number, MctsNode>>>;
     public parent: MctsNode | null;
     private board: Board;
-    private player: number;
+    private player: 0 | 1;
     private simulation: number;
     private c: number
     private generator: Generator<{ orientation: "vertical" | "horizontal"; x: number; y: number, board: Board }, void, unknown>;
 
-    constructor(board: Board, player: number, simulation: number, c: number, parent: MctsNode | null = null) {
+    constructor(board: Board, player: 0 | 1, simulation: number, c: number, parent: MctsNode | null = null) {
         this.wins = 0;
         this.visits = 0;
         this.nodes = new Map();

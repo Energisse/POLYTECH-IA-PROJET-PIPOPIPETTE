@@ -12,36 +12,39 @@ export default class Game extends EventTarget {
   }
 
   public async play() {
-    await this.players[this.board.getTour() - 1].play(this.board, this.board.getTour() - 1).then((coup) => {
+    await this.players[this.board.getTour()].play(this.board, this.board.getTour()).then((coup) => {
       this.board.play(coup.orientation, coup.x, coup.y);
       if (!this.board.isFinished()) this.play();
     });
   }
 }
 
+export type playValue = -1 | 0 | 1;
+export type playerValue = 0 | 1;
+
 export class Board extends EventTarget {
-  private cells: number[][] = [];
-  private verticals: number[][] = [];
-  private horizontals: number[][] = [];
+  private cells: playValue[][] = [];
+  private verticals: playValue[][] = [];
+  private horizontals: playValue[][] = [];
 
   private score: [number, number] = [0, 0];
 
-  private tour: number = 1;
+  private tour: playerValue = 0;
 
   constructor(size: number);
-  constructor(board: { cells: number[][]; verticals: number[][]; horizontals: number[][]; score: [number, number]; tour: number });
-  constructor(BoardOrSize: number | { cells: number[][]; verticals: number[][]; horizontals: number[][]; score: [number, number]; tour: number }) {
+  constructor(board: { cells: playValue[][]; verticals: playValue[][]; horizontals: playValue[][]; score: [number, number]; tour: playerValue });
+  constructor(BoardOrSize: number | { cells: playValue[][]; verticals: playValue[][]; horizontals: playValue[][]; score: [number, number]; tour: playerValue }) {
     super();
     if (typeof BoardOrSize === "number") {
-      this.cells = new Array(BoardOrSize).fill(0).map(() => new Array(BoardOrSize).fill(0));
+      this.cells = new Array(BoardOrSize).fill(0).map(() => new Array(BoardOrSize).fill(-1));
       this.verticals = new Array(BoardOrSize)
         .fill(0)
-        .map(() => new Array(BoardOrSize + 1).fill(0));
+        .map(() => new Array(BoardOrSize + 1).fill(-1));
       this.horizontals = new Array(BoardOrSize + 1)
         .fill(0)
-        .map(() => new Array(BoardOrSize).fill(0));
+        .map(() => new Array(BoardOrSize).fill(-1));
       this.score = [0, 0];
-      this.tour = 1;
+      this.tour = 0;
     } else {
       this.cells = BoardOrSize.cells;
       this.verticals = BoardOrSize.verticals;
@@ -51,15 +54,15 @@ export class Board extends EventTarget {
     }
   }
 
-  public getCells(): number[][] {
+  public getCells(): playValue[][] {
     return this.cells;
   }
 
-  public getVerticals(): number[][] {
+  public getVerticals(): playValue[][] {
     return this.verticals;
   }
 
-  public getHorizontals(): number[][] {
+  public getHorizontals(): playValue[][] {
     return this.horizontals;
   }
 
@@ -67,7 +70,7 @@ export class Board extends EventTarget {
     return this.score;
   }
 
-  public getTour(): number {
+  public getTour(): playerValue {
     return this.tour;
   }
 
@@ -77,10 +80,10 @@ export class Board extends EventTarget {
     y: number
   ): void {
     if (orientation === "vertical") {
-      if (this.verticals[y][x] !== 0) return;
+      if (this.verticals[y][x] !== -1) return;
       this.verticals[y][x] = this.tour;
     } else {
-      if (this.horizontals[y][x] !== 0) return;
+      if (this.horizontals[y][x] !== -1) return;
       this.horizontals[y][x] = this.tour;
     }
 
@@ -99,9 +102,9 @@ export class Board extends EventTarget {
     }
 
     if (!cells.length) {
-      this.tour = this.tour === 1 ? 2 : 1;
+      this.tour = this.tour === 1 ? 0 : 1;
     } else {
-      this.score[this.tour - 1] += cells.length;
+      this.score[this.tour] += cells.length;
 
       cells.forEach((cell) => {
         this.cells[cell[1]][cell[0]] = this.tour;
@@ -121,7 +124,7 @@ export class Board extends EventTarget {
 
 
     if (this.isFinished()) {
-      const winner = this.score[0] === this.score[1] ? 0 : this.score[0] > this.score[1] ? 1 : 2;
+      const winner = this.score[0] === this.score[1] ? 0 : this.score[0] > this.score[1] ? 0 : 1;
       this.dispatchEvent(new CustomEvent("end", { detail: { winner } }));
     }
   }
@@ -135,10 +138,10 @@ export class Board extends EventTarget {
       return false;
     }
     if (
-      this.verticals[y][x] &&
-      this.verticals[y][x + 1] &&
-      this.horizontals[y][x] &&
-      this.horizontals[y + 1]?.[x]
+      this.verticals[y][x] !== -1 &&
+      this.verticals[y][x + 1] !== -1 &&
+      this.horizontals[y][x] !== -1 &&
+      this.horizontals[y + 1]?.[x] !== -1
     ) {
       return [x, y];
     }
@@ -146,7 +149,7 @@ export class Board extends EventTarget {
   }
 
   public evaluation(idPlayer: number) {
-    return this.score[idPlayer] - this.score[(idPlayer + 1) % 2];
+    return this.score[idPlayer] - this.score[idPlayer === 1 ? 0 : 1];
   }
 
   public copy() {
@@ -171,7 +174,7 @@ export class Board extends EventTarget {
   > {
     const playable = this.verticals
       .flatMap((row, y) => row.map((value, x) => ({ x, y, value })))
-      .filter(({ value }) => value === 0);
+      .filter(({ value }) => value === -1);
 
     while (playable.length > 0) {
       const { x, y } = playable.splice(
@@ -201,7 +204,7 @@ export class Board extends EventTarget {
   > {
     const playable = this.horizontals
       .flatMap((row, y) => row.map((value, x) => ({ x, y, value })))
-      .filter(({ value }) => value === 0);
+      .filter(({ value }) => value === -1);
 
     while (playable.length > 0) {
       const { x, y } = playable.splice(

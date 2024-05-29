@@ -57,12 +57,12 @@ Worker.prototype.emit = function (...data) {
 };
 
 const MyContextProvider = ({ children }: { children: ReactNode }) => {
-  const [verticals, setVerticals] = useState<Array<Array<number>>>([]);
-  const [horizontals, setHorizontals] = useState<Array<Array<number>>>([]);
-  const [cells, setCells] = useState<Array<Array<number>>>([]);
+  const [verticals, setVerticals] = useState<Array<Array<-1 | 0 | 1>>>([]);
+  const [horizontals, setHorizontals] = useState<Array<Array<-1 | 0 | 1>>>([]);
+  const [cells, setCells] = useState<Array<Array<-1 | 0 | 1>>>([]);
   const [score, setScore] = useState<[number, number]>([0, 0]);
-  const [winner, setWinner] = useState<number>(0);
-  const [tour, setTour] = useState<number>(0);
+  const [winner, setWinner] = useState<-1 | 0 | 1>(-1);
+  const [tour, setTour] = useState<0 | 1>(0);
   const [tree, setTree] = useState<Data>({ name: "root", children: [] });
   const [size, setSize] = useState<number>(0);
 
@@ -102,7 +102,7 @@ const MyContextProvider = ({ children }: { children: ReactNode }) => {
         if (game) game.terminate();
         setSize(size);
 
-        setWinner(0);
+        setWinner(-1);
 
         game = new Worker(new URL("./worker.ts", import.meta.url));
         game.addEventListener("message", ({ data: { data, type } }) => {
