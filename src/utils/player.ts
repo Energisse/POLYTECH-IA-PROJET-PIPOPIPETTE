@@ -27,7 +27,6 @@ export class HumanPlayer extends Player {
                 this.totalMove++
                 this.times.push(end - start)
                 console.log(`Player ${player} (${(this as any).constructor.name}) Time: ${end - start} Average time: ${this.totalTime / this.totalMove}ms`)
-                console.table(this.times)
                 const customEvent = e as CustomEvent<{ x: number, y: number, orientation: "vertical" | "horizontal" }>;
                 resolve(customEvent.detail);
             }, { once: true })
@@ -46,7 +45,6 @@ export abstract class iaPlayer extends Player {
                 this.totalMove++
                 this.times.push(end - start)
                 console.log(`Player ${player} (${(this as any).constructor.name}) Time: ${end - start} Average time: ${this.totalTime / this.totalMove}ms`)
-                console.table(this.times)
                 return result
             })(),
             //delay to see the move
@@ -65,6 +63,8 @@ export class MctsPlayer extends iaPlayer {
     private iteration: number;
     private simulation: number;
     private c: number
+    private lastBoard: Board | null = null;
+    private lastNode: MctsNode | null = null;
 
     constructor({ iteration, simulation, c }: { iteration: number, simulation: number, c?: number }) {
         super();
@@ -75,12 +75,53 @@ export class MctsPlayer extends iaPlayer {
 
     playIa(board: Board, player: 0 | 1): Promise<Coup> {
         return new Promise<Coup>((resolve) => {
-            let root = new MctsNode(board, player, this.simulation, this.c);
+            let bestNode: MctsNode | null = null;
+            if (this.lastBoard && this.lastNode) {
+                const played = this.lastBoard
+                    .getHorizontals()
+                    .flatMap((row, y) => row.map((cell, x) => cell === -1 && board.getHorizontals()[y][x] !== -1 ? { x, y, orientation: "horizontal" } : null))
+                    .filter(x => x)
+                    .concat(
+                        this.lastBoard
+                            .getVerticals()
+                            .flatMap((row, y) => row.map((cell, x) => cell === -1 && board.getVerticals()[y][x] !== -1 ? { x, y, orientation: "vertical" } : null))
+                            .filter(x => x)
+                    ) as { x: number, y: number, orientation: "vertical" | "horizontal" }[]
+
+                if (played.length === 0) {
+                    bestNode = this.lastNode;
+                }
+
+
+                let bestValue = -Infinity;
+                if (played.length > 0) {
+                    for (const coup of permute(played)) {
+                        let currentNode: MctsNode | null = this.lastNode!.nodes.get(coup[0].orientation)?.get(coup[0].x)?.get(coup[0].y) || null;
+                        for (let i = 1; i < coup.length; i++) {
+                            currentNode = currentNode?.nodes.get(coup[i].orientation)?.get(coup[i].x)?.get(coup[i].y) || null;
+                            if (!currentNode) break;
+                        }
+                        if (currentNode) {
+                            const value = currentNode.wins / currentNode.visits
+                            if (value > bestValue) {
+                                bestValue = value;
+                                bestNode = currentNode;
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            let root = bestNode || new MctsNode(board, player, this.simulation, this.c);
             while (root.getNumberVisited() < this.iteration * this.simulation) {
                 root.run();
             }
             this.dispatchEvent(new CustomEvent("tree", { detail: root }));
             let bestChild = root.getBestChild();
+            this.lastNode = bestChild.bestNode;
+            board.play(bestChild.orientation, bestChild.x, bestChild.y);
+            this.lastBoard = board.copy();
             resolve({ x: bestChild.x, y: bestChild.y, orientation: bestChild.orientation });
         })
     }
@@ -93,7 +134,6 @@ export class RandomPlayer extends iaPlayer {
             resolve({ x, y, orientation });
         })
     }
-
 }
 
 export class MinimaxPlayer extends iaPlayer {
@@ -106,7 +146,9 @@ export class MinimaxPlayer extends iaPlayer {
 
     playIa(board: Board, player: 0 | 1): Promise<Coup> {
         return new Promise<Coup>((resolve) => {
-            resolve(negamax(board, this.depth, true, player));
+            const { nodes, ...coup } = negamax(board, this.depth, true, player)
+            console.log(`Player ${player} (${(this as any).constructor.name}) : ${nodes} nodes`)
+            resolve(coup);
         })
     }
 }
@@ -152,7 +194,29 @@ export class AlphaBetaPlayer extends iaPlayer {
 
     playIa(board: Board, player: 0 | 1) {
         return new Promise<Coup>((resolve) => {
-            resolve(nigamax(board, this.depth, true, player));
+            const { nodes, ...coup } = nigamax(board, this.depth, true, player)
+            console.log(`Player ${player} (${(this as any).constructor.name}) : ${nodes} nodes`)
+            resolve(coup);
         })
     }
+}
+
+
+function permute<T>(arr: T[]): T[][] {
+    let results: T[][] = [];
+
+    function permuteRecursively(subArr: T[], memo: T[]) {
+        if (subArr.length === 0) {
+            results.push(memo.slice());
+        } else {
+            for (let i = 0; i < subArr.length; i++) {
+                let curr = subArr.slice();
+                let next = curr.splice(i, 1);
+                permuteRecursively(curr, memo.concat(next));
+            }
+        }
+    }
+
+    permuteRecursively(arr, []);
+    return results;
 }

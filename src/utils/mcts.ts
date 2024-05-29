@@ -4,7 +4,7 @@ import { Board } from "./game";
 export class MctsNode {
     public wins: number;
     public visits: number;
-    private nodes: Map<"vertical" | "horizontal", Map<number, Map<number, MctsNode>>>;
+    public nodes: Map<"vertical" | "horizontal", Map<number, Map<number, MctsNode>>>;
     public parent: MctsNode | null;
     private board: Board;
     private player: 0 | 1;
@@ -34,6 +34,7 @@ export class MctsNode {
         }
 
         let newChild = this.expansion()
+
         if (newChild) {
             for (let i = 0; i < this.simulation; i++) {
                 newChild.backpropagation(newChild.simulate());
@@ -74,14 +75,16 @@ export class MctsNode {
     }
 
     private simulate() {
-        let result = this.board.getNodes().next()
-        let endBoard;
-        while (!result.done) {
-            endBoard = result.value.board;
-            result = result.value.board.getNodes().next();
+        let gen = this.board.getNodes();
+        let result: Board | null = null;
+        for (let node of gen) {
+            result = node.board;
+            if (node.board.isFinished()) {
+                break;
+            }
         }
-        if (!endBoard) return false;
-        return endBoard.getScore()[this.player] > endBoard.getScore()[this.player === 1 ? 0 : 1];
+        if (!result) return false;
+        return result.getScore()[this.player] > result.getScore()[this.player === 1 ? 0 : 1];
     }
 
     private expansion() {
