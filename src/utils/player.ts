@@ -3,7 +3,7 @@ import { MctsNode } from "./mcts";
 import negamax from "./negamax";
 import nigamax from "./nigamax";
 
-interface Coup {
+export interface Coup {
     x: number,
     y: number,
     orientation: "vertical" | "horizontal"

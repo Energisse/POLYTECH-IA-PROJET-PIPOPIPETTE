@@ -75,15 +75,15 @@ export class MctsNode {
     }
 
     private simulate() {
+        
         let gen = this.board.getNodes();
-        let result: Board | null = null;
+        const result = this.board.copy();
         for (let node of gen) {
-            result = node.board;
+            result.play(node.orientation, node.x, node.y);
             if (node.board.isFinished()) {
                 break;
             }
         }
-        if (!result) return false;
         return result.getScore()[this.player] > result.getScore()[this.player === 1 ? 0 : 1];
     }
 

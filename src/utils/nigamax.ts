@@ -1,4 +1,5 @@
 import { Board } from "./game";
+import { Coup } from "./player";
 
 export default function nigamax(board: Board, depth: number, maximizingPlayer: boolean, idPlayer: number, alpha: number = -Infinity, beta: number = Infinity): {
   x: number;
@@ -7,10 +8,8 @@ export default function nigamax(board: Board, depth: number, maximizingPlayer: b
   orientation: "vertical" | "horizontal";
   nodes: number;
 } {
-  let x = -1,
-    y = -1,
-    orientation: "vertical" | "horizontal" = "vertical",
-    nodes = 0;
+  const bestMoveByDepth:Map<number, Coup> = new Map();
+  let nodes = 0;
   function _nigamax(board: Board, depth: number, maximizingPlayer: boolean, alpha: number = -Infinity, beta: number = Infinity): number {
     if (depth === 0 || board.isFinished()) {
       return board.evaluation(idPlayer) * (maximizingPlayer ? 1 : -1)
@@ -21,9 +20,7 @@ export default function nigamax(board: Board, depth: number, maximizingPlayer: b
       const result = _nigamax(node, depth - 1, !maximizingPlayer, -beta, -alpha);
       if (-result > value) {
         value = -result;
-        x = _x;
-        y = _y;
-        orientation = _orientation;
+        bestMoveByDepth.set(depth, {x: _x, y: _y, orientation: _orientation});
       }
       if (value >= beta) {
         return value
@@ -36,9 +33,7 @@ export default function nigamax(board: Board, depth: number, maximizingPlayer: b
   const value = _nigamax(board, depth, maximizingPlayer, alpha, beta)
   return {
     value,
-    x,
-    y,
-    orientation,
+    ...bestMoveByDepth.get(depth)!,
     nodes
   };
 }

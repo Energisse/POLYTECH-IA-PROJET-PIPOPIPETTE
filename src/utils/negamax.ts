@@ -1,4 +1,5 @@
 import { Board } from "./game";
+import { Coup } from "./player";
 
 export default function negamax(
   board: Board,
@@ -12,10 +13,8 @@ export default function negamax(
   orientation: "vertical" | "horizontal";
   nodes: number;
 } {
-  let x = -1,
-    y = -1,
-    orientation: "vertical" | "horizontal" = "vertical",
-    nodes = 0;
+  const bestMoveByDepth:Map<number, Coup> = new Map();
+   let nodes = 0;
   function _negamax(board: Board, depth: number, maximizingPlayer: boolean,): number {
     if (depth === 0 || board.isFinished())
       return board.evaluation(idPlayer) * (maximizingPlayer ? 1 : -1)
@@ -24,10 +23,8 @@ export default function negamax(
       nodes++;
       const result = _negamax(node, depth - 1, !maximizingPlayer);
       if (-result > value) {
+        bestMoveByDepth.set(depth, {x: _x, y: _y, orientation: _orientation});
         value = -result;
-        x = _x;
-        y = _y;
-        orientation = _orientation;
       }
     }
     return value;
@@ -35,10 +32,8 @@ export default function negamax(
   const value = _negamax(board, depth, maximizingPlayer)
 
   return {
-    x,
-    y,
+    ...bestMoveByDepth.get(depth)!,
     value,
-    orientation,
     nodes
   };
 }
