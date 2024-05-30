@@ -124,7 +124,7 @@ export class Board extends EventTarget {
 
 
     if (this.isFinished()) {
-      const winner = this.score[0] === this.score[1] ? 0 : this.score[0] > this.score[1] ? 0 : 1;
+      const winner = this.score[0] === this.score[1] ? -1 : this.score[0] > this.score[1] ? 0 : 1;
       this.dispatchEvent(new CustomEvent("end", { detail: { winner } }));
     }
   }
@@ -148,7 +148,7 @@ export class Board extends EventTarget {
     return false;
   }
 
-  public evaluation(idPlayer: number) {
+  public evaluation(idPlayer: playerValue) {
     return this.score[idPlayer] - this.score[idPlayer === 1 ? 0 : 1];
   }
 
