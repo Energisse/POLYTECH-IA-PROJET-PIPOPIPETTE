@@ -1,26 +1,29 @@
-import { Board } from "./game";
-import { Coup } from "./player";
+import { Board, playerValue } from "./game";
 
-export default function nigamax(board: Board, depth: number, maximizingPlayer: boolean, idPlayer: number, alpha: number = -Infinity, beta: number = Infinity): {
+export default function nigamax(board: Board, _depth: number, maximizingPlayer: boolean, idPlayer: playerValue, alpha: number = -Infinity, beta: number = Infinity): {
   x: number;
   y: number;
   value: number;
   orientation: "vertical" | "horizontal";
   nodes: number;
 } {
-  const bestMoveByDepth:Map<number, Coup> = new Map();
+  let x = 0, y = 0, orientation: "vertical" | "horizontal" = "vertical";
   let nodes = 0;
   function _nigamax(board: Board, depth: number, maximizingPlayer: boolean, alpha: number = -Infinity, beta: number = Infinity): number {
     if (depth === 0 || board.isFinished()) {
       return board.evaluation(idPlayer) * (maximizingPlayer ? 1 : -1)
     }
     let value = -Infinity;
-    for (const { board: node, x: _x, y: _y, orientation: _orientation, } of board.getNodes()) {
+    for (const { board: node, x: _x, y: _y, orientation: _orientation } of board.getNodes()) {
       nodes++;
       const result = _nigamax(node, depth - 1, !maximizingPlayer, -beta, -alpha);
       if (-result > value) {
         value = -result;
-        bestMoveByDepth.set(depth, {x: _x, y: _y, orientation: _orientation});
+        if (depth === _depth) {
+          x = _x;
+          y = _y;
+          orientation = _orientation;
+        }
       }
       if (value >= beta) {
         return value
@@ -30,10 +33,12 @@ export default function nigamax(board: Board, depth: number, maximizingPlayer: b
     return value;
   }
 
-  const value = _nigamax(board, depth, maximizingPlayer, alpha, beta)
+  const value = _nigamax(board, _depth, maximizingPlayer, alpha, beta)
   return {
     value,
-    ...bestMoveByDepth.get(depth)!,
+    x,
+    y,
+    orientation,
     nodes
   };
 }
