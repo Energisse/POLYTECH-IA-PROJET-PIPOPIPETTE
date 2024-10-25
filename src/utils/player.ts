@@ -200,6 +200,15 @@ export class AlphaBetaPlayer extends iaPlayer {
     }
 }
 
+export class PipopipetteGo extends iaPlayer {
+
+    playIa(board: Board, player: 0 | 1) {
+        
+        
+        return new RandomPlayer().playIa(board, player)
+    }
+}
+
 
 function permute<T>(arr: T[]): T[][] {
     let results: T[][] = [];

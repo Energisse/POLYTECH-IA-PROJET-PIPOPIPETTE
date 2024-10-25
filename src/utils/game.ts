@@ -3,7 +3,6 @@ import { Player } from "./player";
 export default class Game extends EventTarget {
   readonly board: Board;
   private players: [Player, Player];
-
   constructor(size: number, player1: Player, player2: Player) {
     super();
     this.board = new Board(size);
@@ -23,6 +22,13 @@ export type playValue = -1 | 0 | 1;
 export type playerValue = 0 | 1;
 
 export class Board extends EventTarget {
+  readonly history: Array<{
+    verticals: playValue[][];
+    horizontals: playValue[][];
+    cells: playValue[][];
+    score: [number, number];
+  }> = [];
+
   private cells: playValue[][] = [];
   private verticals: playValue[][] = [];
   private horizontals: playValue[][] = [];
@@ -122,6 +128,12 @@ export class Board extends EventTarget {
       })
     );
 
+    this.history.push({
+      verticals: this.verticals.map((row) => [...row]),
+      horizontals: this.horizontals.map((row) => [...row]),
+      cells: this.cells.map((row) => [...row]),
+      score: [...this.score],
+    });
 
     if (this.isFinished()) {
       const winner = this.score[0] === this.score[1] ? -1 : this.score[0] > this.score[1] ? 0 : 1;
