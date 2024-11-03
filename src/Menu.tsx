@@ -9,6 +9,7 @@ const playerList = [
   "mcts",
   "random",
   "fastest",
+  "pipopipetteGo",
 ] as const;
 
 export type playerType = (typeof playerList)[number];

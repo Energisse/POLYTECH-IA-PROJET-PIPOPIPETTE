@@ -13,14 +13,28 @@ type MyContextData = {
   createGame: (
     players: [
       {
-        type: "human" | "minimax" | "alphabeta" | "mcts" | "fastest" | "random";
+        type:
+          | "human"
+          | "minimax"
+          | "alphabeta"
+          | "mcts"
+          | "fastest"
+          | "random"
+          | "pipopipetteGo";
         depth: number;
         iteration: number;
         simulation: number;
         c: number;
       },
       {
-        type: "human" | "minimax" | "alphabeta" | "mcts" | "fastest" | "random";
+        type:
+          | "human"
+          | "minimax"
+          | "alphabeta"
+          | "mcts"
+          | "fastest"
+          | "random"
+          | "pipopipetteGo";
         depth: number;
         iteration: number;
         simulation: number;
@@ -77,7 +91,8 @@ const MyContextProvider = ({ children }: { children: ReactNode }) => {
               | "alphabeta"
               | "mcts"
               | "fastest"
-              | "random";
+              | "random"
+              | "pipopipetteGo";
             depth: number;
             iteration: number;
             simulation: number;
@@ -90,7 +105,8 @@ const MyContextProvider = ({ children }: { children: ReactNode }) => {
               | "alphabeta"
               | "mcts"
               | "fastest"
-              | "random";
+              | "random"
+              | "pipopipetteGo";
             depth: number;
             iteration: number;
             simulation: number;

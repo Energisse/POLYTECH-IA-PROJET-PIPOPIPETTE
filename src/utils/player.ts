@@ -2,6 +2,7 @@ import { Board } from "./game";
 import { MctsNode } from "./mcts";
 import negamax from "./negamax";
 import nigamax from "./nigamax";
+import pipopipetteGo from "./pipopipetteGo";
 
 export interface Coup {
     x: number,
@@ -203,8 +204,7 @@ export class AlphaBetaPlayer extends iaPlayer {
 export class PipopipetteGo extends iaPlayer {
 
     playIa(board: Board, player: 0 | 1) {
-        
-        
+        console.log(pipopipetteGo(board, player))
         return new RandomPlayer().playIa(board, player)
     }
 }

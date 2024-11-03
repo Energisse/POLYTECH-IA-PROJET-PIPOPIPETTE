@@ -1,6 +1,6 @@
 import { MainToWorkerEventMap } from "./@types/worker";
 import Game, { playValue, playerValue } from "./utils/game";
-import { AlphaBetaPlayer, FastestPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, RandomPlayer } from "./utils/player";
+import { AlphaBetaPlayer, FastestPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, PipopipetteGo, RandomPlayer } from "./utils/player";
 
 declare var self: DedicatedWorkerGlobalScope;
 
@@ -136,6 +136,8 @@ function createPlayer(player: MainToWorkerEventMap["start"]["detail"]["player1"]
             return new MctsPlayer(player);
         case "fastest":
             return new FastestPlayer(player);
+        case "pipopipetteGo":
+            return new PipopipetteGo();
     }
 }
 

@@ -1,5 +1,6 @@
 
 import * as tf from "@tensorflow/tfjs"
+import { Board } from "./game"
 
 
 // 5 x 5 grid 
@@ -99,9 +100,22 @@ policyLayer.add(tf.layers.dense({
     activation: 'softmax'
 }))
 
-export default function pipopipetteGo(board: number[][], player: 0 | 1) {
-    const array = [
-        ...
-        new Array(6).fill(player)
-    ];
+export default function pipopipetteGo(board: Board, player: 0 | 1) {
+    // TODO: Implement pipopipetteGo
+    // const array = [
+    //     ...
+    //     new Array(6).fill(player)
+    // ];
+
+    // const input = tf.tensor(array, [6, 6, 1])
+    // const residualBlock = new ResidualBlock()
+    // const x = residualBlock.apply(input)
+    // const conv = convLayer.apply(x)
+    // const head = headLayer.apply(conv)
+    // const policy = policyLayer.apply(conv)
+
+    // return {
+    //     head,
+    //     policy
+    // }
 }

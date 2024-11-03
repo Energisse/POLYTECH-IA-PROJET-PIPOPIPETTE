@@ -3,7 +3,7 @@ import { playValue, playerValue } from "../utils/game"
 export interface MainToWorkerEventMap {
     "start": CustomEvent<{
         player1: {
-            type: "human" | "random",
+            type: "human" | "random" | "pipopipetteGo",
         } | {
             type: "minimax" | "alphabeta",
             depth: number
@@ -18,9 +18,9 @@ export interface MainToWorkerEventMap {
             iteration: number,
             simulation: number,
             c: number
-        }
+        },
         player2: {
-            type: "human" | "random",
+            type: "human" | "random" | "pipopipetteGo",
         } | {
             type: "minimax" | "alphabeta",
             depth: number
