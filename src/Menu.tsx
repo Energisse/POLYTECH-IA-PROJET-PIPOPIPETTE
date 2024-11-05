@@ -17,7 +17,7 @@ export type playerType = (typeof playerList)[number];
 function Menu() {
   const { createGame } = useContext(MyContext);
 
-  const [size, setSize] = useState<number>(3);
+  const [size, setSize] = useState<number>(5);
 
   const [player1, setPlayer1] = useState<playerType>("human");
 
@@ -68,11 +68,12 @@ function Menu() {
         <Grid container>
           <Grid item>
             <ButtonGroup orientation="vertical">
-              {playerList.map((player) => (
+              {playerList.map((player, index) => (
                 <Button
                   variant={player1 === player ? "contained" : "outlined"}
                   color="error"
                   onClick={() => setPlayer1(player as playerType)}
+                  key={index}
                 >
                   {player}
                 </Button>
@@ -141,10 +142,11 @@ function Menu() {
         <Grid container>
           <Grid item>
             <ButtonGroup orientation="vertical">
-              {playerList.map((player) => (
+              {playerList.map((player, index) => (
                 <Button
                   variant={player2 === player ? "contained" : "outlined"}
                   onClick={() => setPlayer2(player as playerType)}
+                  key={index}
                 >
                   {player}
                 </Button>

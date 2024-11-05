@@ -84,6 +84,7 @@ function Game() {
               parts={parts}
               cell={cell}
               handleCLick={handleCLick}
+              key={`${x}-${y}`}
             />
           ))
         )}
@@ -95,12 +96,13 @@ function Game() {
               parts={parts}
               cell={cell}
               handleCLick={handleCLick}
+              key={`${x}-${y}`}
             />
           ))
         )}
         {cells.map((row, y) => {
           return row.map((cell, x) => (
-            <Cell x={x} y={y} parts={parts} cell={cell} />
+            <Cell x={x} y={y} parts={parts} cell={cell} key={`${x}-${y}`} />
           ));
         })}
       </svg>

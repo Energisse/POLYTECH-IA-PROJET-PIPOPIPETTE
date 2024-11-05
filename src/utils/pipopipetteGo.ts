@@ -1,7 +1,7 @@
-
 import * as tf from "@tensorflow/tfjs"
-import { Board } from "./game"
+import { Board, playValue } from "./game"
 
+tf.setBackend("wasm")
 
 // 5 x 5 grid 
 
@@ -23,7 +23,7 @@ import { Board } from "./game"
 
 
 
-class ResidualBlock extends tf.layers.Layer {
+class ResidualBlock {
     private conv1 = tf.layers.conv2d({
         kernelSize: 3,
         filters: 256,
@@ -57,16 +57,17 @@ class ResidualBlock extends tf.layers.Layer {
 
 const convLayer = tf.sequential()
 convLayer.add(tf.layers.conv2d({
-    inputShape: [6, 6, 17],
+    inputShape: [43, 6, 6],
     kernelSize: 3,
     filters: 256,
-    activation: 'relu'
+    activation: 'relu',
 }))
 convLayer.add(tf.layers.batchNormalization())
 convLayer.add(tf.layers.reLU())
 
 const headLayer = tf.sequential()
 headLayer.add(tf.layers.conv2d({
+    inputShape: [41, 4, 256],
     kernelSize: 1,
     filters: 2,
     activation: 'relu'
@@ -88,6 +89,7 @@ headLayer.add(tf.layers.dense(
 
 const policyLayer = tf.sequential()
 policyLayer.add(tf.layers.conv2d({
+    inputShape: [41, 4, 256],
     kernelSize: 1,
     filters: 2,
     activation: 'relu'
@@ -100,22 +102,80 @@ policyLayer.add(tf.layers.dense({
     activation: 'softmax'
 }))
 
-export default function pipopipetteGo(board: Board, player: 0 | 1) {
-    // TODO: Implement pipopipetteGo
-    // const array = [
-    //     ...
-    //     new Array(6).fill(player)
-    // ];
+const residualBlocks = new Array(40).fill(0).map(() => new ResidualBlock())
 
-    // const input = tf.tensor(array, [6, 6, 1])
-    // const residualBlock = new ResidualBlock()
-    // const x = residualBlock.apply(input)
-    // const conv = convLayer.apply(x)
-    // const head = headLayer.apply(conv)
-    // const policy = policyLayer.apply(conv)
 
-    // return {
-    //     head,
-    //     policy
-    // }
+
+export default async function pipopipetteGo(board: Board, player: 0 | 1) {
+    const historyCount = 7
+
+    const player1History: Omit<typeof board.history[0], "score" | "player">[] = []
+    const player2History: Omit<typeof board.history[0], "score" | "player">[] = []
+
+    const history = board.history
+    for (let i = history.length - 1; i >= 0; i--) {
+        if (player1History.length === historyCount && player2History.length === historyCount) break
+        if (history[i].player === 0 && player1History.length < historyCount) {
+            player1History.push({
+                verticals: history[i].verticals.map(v => v.map(v => v === player ? 1 : 0)),
+                horizontals: history[i].horizontals.map(v => v.map(v => v === player ? 1 : 0)),
+                cells: history[i].cells.map(v => v.map(v => v === player ? 1 : 0)),
+            })
+        } else if (history[i].player === 1 && player2History.length < historyCount) {
+            player2History.push({
+                verticals: history[i].verticals.map(v => v.map(v => v === (player + 1) % 2 ? 1 : 0)),
+                horizontals: history[i].horizontals.map(v => v.map(v => v === (player + 1) % 2 ? 1 : 0)),
+                cells: history[i].cells.map(v => v.map(v => v === (player + 1) % 2 ? 1 : 0)),
+            })
+        }
+    }
+
+    if (player1History.length < historyCount) {
+        player1History.push(...new Array(historyCount - player1History.length).fill({
+            verticals: new Array(5).fill(new Array(6).fill(0)),
+            horizontals: new Array(6).fill(new Array(5).fill(0)),
+            cells: new Array(5).fill(new Array(5).fill(0)),
+        }))
+    }
+
+    if (player2History.length < historyCount) {
+        player2History.push(...new Array(historyCount - player2History.length).fill({
+            verticals: new Array(5).fill(new Array(6).fill(0)),
+            horizontals: new Array(6).fill(new Array(5).fill(0)),
+            cells: new Array(5).fill(new Array(5).fill(0)),
+        }))
+    }
+
+    const array = [
+        ...player1History.map(({ verticals }) => [...verticals, Array(6).fill(0)]),
+        ...player1History.map(({ horizontals }) => horizontals.map((v, i) => [...v, 0])),
+        ...player1History.map(({ cells }) => [...cells.map(c => [...c, 0]), Array(6).fill(0)]),
+        ...player2History.map(({ verticals }) => [...verticals, Array(6).fill(0)]),
+        ...player2History.map(({ horizontals }) => horizontals.map((v, i) => [...v, 0])),
+        ...player2History.map(({ cells }) => [...cells.map(c => [...c, 0]), Array(6).fill(0)]),
+        new Array(6).fill(Array(6).fill(1))
+    ];
+
+    console.time("pipopipetteGo")
+    console.time("conv")
+    let x = convLayer.apply(tf.tensor(array, [43, 6, 6]).reshape([1, 43, 6, 6])) as tf.Tensor
+    console.log(x.print())
+    console.timeEnd("conv")
+    console.time("residualBlocks")
+    for (const residualBlock of residualBlocks) {
+        x = residualBlock.apply(x)
+    }
+    console.timeEnd("residualBlocks")
+
+    console.time("headLayer")
+    const h = headLayer.apply(x) as tf.Tensor
+    console.log(h.dataSync())
+    console.timeEnd("headLayer")
+
+    console.time("policyLayer")
+
+    const p = policyLayer.apply(x) as tf.Tensor
+    console.log(p.dataSync())
+    console.timeEnd("pipopipetteGo")
+    console.timeEnd("policyLayer")
 }

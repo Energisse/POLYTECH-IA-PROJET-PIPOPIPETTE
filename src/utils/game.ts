@@ -27,6 +27,7 @@ export class Board extends EventTarget {
     horizontals: playValue[][];
     cells: playValue[][];
     score: [number, number];
+    player: playerValue;
   }> = [];
 
   private cells: playValue[][] = [];
@@ -133,6 +134,7 @@ export class Board extends EventTarget {
       horizontals: this.horizontals.map((row) => [...row]),
       cells: this.cells.map((row) => [...row]),
       score: [...this.score],
+      player: this.tour,
     });
 
     if (this.isFinished()) {

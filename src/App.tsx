@@ -29,7 +29,7 @@ function App() {
             </Grid>
           </Grid>
         </Grid>
-        <Grid flex={1} xs={12}>
+        <Grid flex={1} item xs={12}>
           <Treee />
         </Grid>
       </Grid>

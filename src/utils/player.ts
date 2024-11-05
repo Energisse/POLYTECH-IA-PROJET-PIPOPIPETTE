@@ -204,7 +204,8 @@ export class AlphaBetaPlayer extends iaPlayer {
 export class PipopipetteGo extends iaPlayer {
 
     playIa(board: Board, player: 0 | 1) {
-        console.log(pipopipetteGo(board, player))
+
+        pipopipetteGo(board, player).then(console.log)
         return new RandomPlayer().playIa(board, player)
     }
 }
