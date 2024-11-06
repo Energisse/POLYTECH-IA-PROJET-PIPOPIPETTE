@@ -1,5 +1,4 @@
-import { Board } from "./game";
-
+import { Board } from "./board";
 
 export class MctsNode {
     public wins: number;
@@ -75,16 +74,13 @@ export class MctsNode {
     }
 
     private simulate() {
-        
-        let gen = this.board.getNodes();
-        const result = this.board.copy();
-        for (let node of gen) {
-            result.play(node.orientation, node.x, node.y);
-            if (node.board.isFinished()) {
-                break;
-            }
+        let board = this.board;
+        while (true) {
+            const { value, done } = board.getNodes().next();
+            if (done) break;
+            board = value.board
         }
-        return result.getScore()[this.player] > result.getScore()[this.player === 1 ? 0 : 1];
+        return board.getWinner() === this.player;
     }
 
     private expansion() {

@@ -1,41 +1,42 @@
 import { playValue, playerValue } from "../utils/game"
 
+
+type PlayerStartEvent = {
+    type: "human"
+} | {
+    type: "random",
+    minTimeToPlay: number
+    depthLimit?: number
+} | {
+    type: "minimax" | "alphabeta",
+    depth: number
+    minTimeToPlay: number
+    depthLimit?: number
+} | {
+    type: "mcts",
+    iteration: number,
+    simulation: number,
+    c: number
+    minTimeToPlay: number
+} | {
+    type: "fastest",
+    depth: number
+    iteration: number,
+    simulation: number,
+    c: number
+    minTimeToPlay: number
+    depthLimit?: number
+} | {
+    type: "alphaZero",
+    minTimeToPlay: number
+    model: string
+    mctsIteration: number
+}
+
 export interface MainToWorkerEventMap {
     "start": CustomEvent<{
-        player1: {
-            type: "human" | "random" | "pipopipetteGo",
-        } | {
-            type: "minimax" | "alphabeta",
-            depth: number
-        } | {
-            type: "mcts",
-            iteration: number,
-            simulation: number,
-            c: number
-        } | {
-            type: "fastest",
-            depth: number,
-            iteration: number,
-            simulation: number,
-            c: number
-        },
-        player2: {
-            type: "human" | "random" | "pipopipetteGo",
-        } | {
-            type: "minimax" | "alphabeta",
-            depth: number
-        } | {
-            type: "mcts",
-            iteration: number,
-            simulation: number,
-            c: number
-        } | {
-            type: "fastest",
-            depth: number,
-            iteration: number,
-            simulation: number,
-            c: number
-        }
+        player1: PlayerStartEvent
+        player2: PlayerStartEvent
         size: number
     }>,
     "play": CustomEvent<{
@@ -47,16 +48,15 @@ export interface MainToWorkerEventMap {
 
 export interface WorkerToMainEventMap {
     "change": CustomEvent<{
-        verticals: playValue[][],
-        horizontals: playValue[][],
-        score: [number, number],
-        tour: playerValue,
-        cells: playValue[][]
+        verticals: ReadonlyArray<ReadonlyArray<playValue>>,
+        horizontals: ReadonlyArray<ReadonlyArray<playValue>>,
+        score: readonly [number, number],
+        tour: readonly playerValue,
+        cells: ReadonlyArray<ReadonlyArray<playValue>>
     }>,
     "end": CustomEvent<{
         winner: playerValue
     }>,
-    "tree": CustomEvent<any>
 }
 
 declare global {

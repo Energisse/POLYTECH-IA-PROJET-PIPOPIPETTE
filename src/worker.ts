@@ -1,6 +1,13 @@
 import { MainToWorkerEventMap } from "./@types/worker";
-import Game, { playValue, playerValue } from "./utils/game";
-import { AlphaBetaPlayer, FastestPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, PipopipetteGo, RandomPlayer } from "./utils/player";
+import { PlayerValue, PlayValue } from "./utils/board";
+import Game from "./utils/game";
+import { AlphaBetaPlayer } from "./utils/players/AlphaBetaPlayer";
+import AlplhaZeroPlayer from "./utils/players/AlphaZeroPlayer";
+import { FastestPlayer } from "./utils/players/FastestPlayer";
+import { HumanPlayer } from "./utils/players/HumanPlayer";
+import { MctsPlayer } from "./utils/players/MCTSPlayer";
+import { MinimaxPlayer } from "./utils/players/MinimaxPlayer";
+import { RandomPlayer } from "./utils/players/RandomPlayer";
 
 declare var self: DedicatedWorkerGlobalScope;
 
@@ -16,54 +23,11 @@ self.addEventListener("message", ({ data: { data, type } }) => {
 
 let game: Game | null = null;
 
-type Node = {
-    visits: number,
-    wins: number,
-    nodes: Map<string, Map<number, Map<number, Node>>>
-}
-
-type Data = {
-    name: string,
-    children: Data[]
-}
-
-function formatNode(node: Node): Data {
-    const children = new Array<Data>();
-    node.nodes.forEach((row, orientation) => {
-        row.forEach((cell, x) => {
-            cell.forEach((node, y) => {
-                children.push(formatNode(node));
-            });
-        });
-    });
-
-    return {
-        name: `${node.wins}/${node.visits}`,
-        children
-    }
-
-}
-
 self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
     if (game) return;
 
     const player1Instance = createPlayer(player1);
     const player2Instance = createPlayer(player2);
-
-    player1Instance.addEventListener("tree", (e) => {
-        self.emit("tree", {
-            player: 1,
-            tree: formatNode((e as CustomEvent<Node>).detail)
-        });
-    });
-
-    player2Instance.addEventListener("tree", (e) => {
-        self.emit("tree", {
-            player: 2,
-            tree: formatNode((e as CustomEvent<Node>).detail)
-        });
-    });
-
 
     game = new Game(size, player1Instance, player2Instance);
 
@@ -83,18 +47,12 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
         });
     }
 
-    self.emit("change", {
-        verticals: game.board.getVerticals(),
-        horizontals: game.board.getHorizontals(),
-        score: game.board.getScore(),
-        tour: game.board.getTour(),
-        cells: game.board.getCells()
-    });
+    self.emit("change", game.getBoard());
 
-    game.board.addEventListener("end", (e) => {
+    game.addEventListener("end", (e) => {
         const { winner } = (
             e as CustomEvent<{
-                winner: playerValue
+                winner: PlayerValue
             }>
         ).detail;
         self.emit("end", {
@@ -102,21 +60,31 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
         });
     });
 
-    game.board.addEventListener("boardChange", (e) => {
-        const { verticals, horizontals, cells } = (
+    game.addEventListener("played", (e) => {
+        const { board } = (
             e as CustomEvent<{
-                verticals: playValue[][];
-                horizontals: playValue[][];
-                cells: playValue[][];
+                played: {
+                    x: number;
+                    y: number;
+                    orientation: string;
+                    player: PlayerValue;
+                };
+                board: {
+                    verticals: ReadonlyArray<ReadonlyArray<PlayValue>>;
+                    horizontals: ReadonlyArray<ReadonlyArray<PlayValue>>;
+                    cells: ReadonlyArray<ReadonlyArray<PlayValue>>;
+                    score: readonly [number, number];
+                    tour: PlayerValue;
+                };
             }>
         ).detail;
 
-        self.emit("change", {
-            verticals,
-            horizontals,
-            score: game!.board.getScore(),
-            tour: game!.board.getTour(),
-            cells
+        self.emit("change", board);
+    });
+
+    game.start().then(() => {
+        self.emit("end", {
+            winner: game!.getBoard().getWinner()
         });
     });
 });
@@ -127,7 +95,7 @@ function createPlayer(player: MainToWorkerEventMap["start"]["detail"]["player1"]
         case "human":
             return new HumanPlayer();
         case "random":
-            return new RandomPlayer();
+            return new RandomPlayer(player);
         case "minimax":
             return new MinimaxPlayer(player);
         case "alphabeta":
@@ -136,8 +104,8 @@ function createPlayer(player: MainToWorkerEventMap["start"]["detail"]["player1"]
             return new MctsPlayer(player);
         case "fastest":
             return new FastestPlayer(player);
-        case "pipopipetteGo":
-            return new PipopipetteGo();
+        case "alphaZero":
+            return new AlplhaZeroPlayer(player);
     }
 }
 

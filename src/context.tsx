@@ -1,144 +1,102 @@
-import { ReactNode, createContext, useMemo, useState } from "react";
+import { ReactNode, createContext, useMemo, useRef, useState } from "react";
+import { Coup, PlayValue } from "./utils/board";
+import { Player } from "./utils/players/Player";
+
+export const playerList = [
+  "human",
+  "minimax",
+  "alphabeta",
+  "mcts",
+  "random",
+  "fastest",
+  "alphaZero",
+] as const;
+
+export type PlayerType = (typeof playerList)[number];
+
+export type PlayerConfig = {
+  depth: number;
+  iteration: number;
+  simulation: number;
+  c: number;
+  type: PlayerType;
+  minTimeToPlay: number;
+  depthLimit?: number;
+  model: string;
+  mctsIteration: number;
+};
 
 type MyContextData = {
-  verticals: Array<Array<number>>;
-  horizontals: Array<Array<number>>;
-  cells: Array<Array<number>>;
-  score: [number, number];
+  verticals: ReadonlyArray<ReadonlyArray<PlayValue>>;
+  horizontals: ReadonlyArray<ReadonlyArray<PlayValue>>;
+  cells: ReadonlyArray<ReadonlyArray<PlayValue>>;
+  score: readonly [number, number];
   winner: number;
   tour: number;
-  tree: any;
   size: number;
-  play: (x: number, y: number, orientation: "vertical" | "horizontal") => void;
-  createGame: (
-    players: [
-      {
-        type:
-          | "human"
-          | "minimax"
-          | "alphabeta"
-          | "mcts"
-          | "fastest"
-          | "random"
-          | "pipopipetteGo";
-        depth: number;
-        iteration: number;
-        simulation: number;
-        c: number;
-      },
-      {
-        type:
-          | "human"
-          | "minimax"
-          | "alphabeta"
-          | "mcts"
-          | "fastest"
-          | "random"
-          | "pipopipetteGo";
-        depth: number;
-        iteration: number;
-        simulation: number;
-        c: number;
-      }
-    ],
-    size: number
-  ) => void;
+  play: (coup: Coup) => void;
+  createGame: (players: [PlayerConfig, PlayerConfig], size: number) => void;
 };
 
 // Créer le contexte
 const MyContext = createContext<MyContextData>({
   cells: [],
   createGame: () => {},
-  play: (x: number, y: number, orientation: "vertical" | "horizontal") => {},
+  play: (coup: Coup) => {},
   horizontals: [],
   score: [0, 0],
-  tour: 0,
-  tree: { name: "root", children: [] },
+  tour: -1,
   verticals: [],
   winner: 0,
   size: 0,
 });
-
-type Data = {
-  name: string;
-  children: Data[];
-};
-
-let game: Worker | null = null;
 
 Worker.prototype.emit = function (...data) {
   this.postMessage({ type: data[0], data: data[1] });
 };
 
 const MyContextProvider = ({ children }: { children: ReactNode }) => {
-  const [verticals, setVerticals] = useState<Array<Array<-1 | 0 | 1>>>([]);
-  const [horizontals, setHorizontals] = useState<Array<Array<-1 | 0 | 1>>>([]);
-  const [cells, setCells] = useState<Array<Array<-1 | 0 | 1>>>([]);
-  const [score, setScore] = useState<[number, number]>([0, 0]);
-  const [winner, setWinner] = useState<-1 | 0 | 1>(-1);
-  const [tour, setTour] = useState<0 | 1>(0);
-  const [tree, setTree] = useState<Data>({ name: "root", children: [] });
+  const [verticals, setVerticals] = useState<
+    ReadonlyArray<ReadonlyArray<PlayValue>>
+  >([]);
+  const [horizontals, setHorizontals] = useState<
+    ReadonlyArray<ReadonlyArray<PlayValue>>
+  >([]);
+  const [cells, setCells] = useState<ReadonlyArray<ReadonlyArray<PlayValue>>>(
+    []
+  );
+  const [score, setScore] = useState<readonly [number, number]>([0, 0]);
+  const [winner, setWinner] = useState<PlayValue>(-1);
+  const [tour, setTour] = useState<0 | 1 | -1>(-1);
   const [size, setSize] = useState<number>(0);
+
+  const game = useRef<Worker | null>(null);
 
   const context = useMemo(() => {
     return {
-      createGame: (
-        players: [
-          {
-            type:
-              | "human"
-              | "minimax"
-              | "alphabeta"
-              | "mcts"
-              | "fastest"
-              | "random"
-              | "pipopipetteGo";
-            depth: number;
-            iteration: number;
-            simulation: number;
-            c: number;
-          },
-          {
-            type:
-              | "human"
-              | "minimax"
-              | "alphabeta"
-              | "mcts"
-              | "fastest"
-              | "random"
-              | "pipopipetteGo";
-            depth: number;
-            iteration: number;
-            simulation: number;
-            c: number;
-          }
-        ],
-        size: number
-      ) => {
-        if (game) game.terminate();
+      createGame: (players: [PlayerConfig, PlayerConfig], size: number) => {
+        if (game.current) game.current.terminate();
         setSize(size);
 
         setWinner(-1);
 
-        game = new Worker(new URL("./worker.ts", import.meta.url));
-        game.addEventListener("message", ({ data: { data, type } }) => {
-          game!.dispatchEvent(new CustomEvent(type, { detail: data }));
+        game.current = new Worker(new URL("./worker.ts", import.meta.url));
+        game.current.addEventListener("message", ({ data: { data, type } }) => {
+          game.current!.dispatchEvent(new CustomEvent(type, { detail: data }));
         });
-        game.addEventListener("change", (e) => {
+        game.current.addEventListener("change", (e) => {
           const { verticals, horizontals, cells, score, tour } = e.detail;
-          setVerticals([...verticals]);
-          setHorizontals([...horizontals]);
-          setCells([...cells]);
-          setScore([...score]);
+          setVerticals(verticals);
+          setHorizontals(horizontals);
+          setCells(cells);
+          setScore(score);
           setTour(tour);
         });
-        game.addEventListener("end", (e) => {
+        game.current.addEventListener("end", (e) => {
           setWinner(e.detail.winner);
         });
-        game.addEventListener("tree", (e) => {
-          setTree(e.detail.tree);
-        });
-        game.emit("start", {
+
+        game.current.emit("start", {
           player1: players[0],
           player2: players[1],
           size,
@@ -155,13 +113,13 @@ const MyContextProvider = ({ children }: { children: ReactNode }) => {
       score,
       winner,
       tour,
-      tree,
       size,
-      play: (x: number, y: number, orientation: "vertical" | "horizontal") =>
-        game?.emit("play", { x, y, orientation }),
+      play: (coup: Coup) => {
+        game.current?.emit("play", coup);
+      },
       ...context,
     };
-  }, [verticals, horizontals, cells, score, winner, tour, tree, size, context]);
+  }, [verticals, horizontals, cells, score, winner, tour, size, context]);
 
   return <MyContext.Provider value={value}>{children}</MyContext.Provider>;
 };

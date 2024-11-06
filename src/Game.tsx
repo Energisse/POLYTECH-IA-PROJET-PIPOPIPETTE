@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Box } from "@mui/material";
 import { useContext, useMemo } from "react";
 import Confetti from "react-confetti";
 import useWindowSize from "react-use/lib/useWindowSize";
@@ -15,15 +15,15 @@ Worker.prototype.emit = function (...data) {
 };
 
 function Game() {
-  const { cells, horizontals, score, tour, verticals, winner, size, play } =
+  const { cells, horizontals, verticals, tour, winner, size, play } =
     useContext(MyContext);
 
   const parts = useMemo(() => {
     return (
       taille /
       (size * cellSizeRatio +
-        (size + 1) * spaceSizeRatio +
-        2 * size * borderSizeRatio)
+        size * 2 * spaceSizeRatio +
+        (size + 1) * borderSizeRatio)
     );
   }, [size]);
 
@@ -32,82 +32,70 @@ function Game() {
     x: number,
     y: number
   ) {
-    play(x, y, orientation);
+    play({ x, y, orientation });
   }
 
   const { width, height } = useWindowSize();
 
   const effect = useMemo(() => {
-    if (winner === 0) {
-      return (
-        <Confetti
-          numberOfPieces={1000}
-          width={width}
-          height={height}
-          colors={["red"]}
-        />
-      );
-    } else if (winner === 1) {
-      return (
-        <Confetti
-          numberOfPieces={1000}
-          width={width}
-          height={height}
-          colors={["blue"]}
-        />
-      );
-    }
-    return null;
+    if (winner === -1) return null;
+    return (
+      <Confetti
+        style={{
+          position: "fixed",
+        }}
+        numberOfPieces={500}
+        width={width}
+        height={height}
+        colors={winner === 0 ? ["red"] : ["blue"]}
+      />
+    );
   }, [height, width, winner]);
 
   return (
-    <Grid>
-      {score.map((value, index) => {
-        return (
-          <div
-            key={index}
-            style={{
-              background:
-                tour === index ? (index ? "blue" : "red") : "transparent",
-            }}
-          >
-            {index + 1}: {value}
-          </div>
-        );
-      })}
-      <svg width="50%" height="50%" viewBox={`0,0,${taille},${taille}`}>
-        {verticals.map((row, y) =>
-          row.map((cell, x) => (
-            <Vertical
-              x={x}
-              y={y}
-              parts={parts}
-              cell={cell}
-              handleCLick={handleCLick}
-              key={`${x}-${y}`}
-            />
-          ))
-        )}
-        {horizontals.map((row, y) =>
-          row.map((cell, x) => (
-            <Horizontal
-              x={x}
-              y={y}
-              parts={parts}
-              cell={cell}
-              handleCLick={handleCLick}
-              key={`${x}-${y}`}
-            />
-          ))
-        )}
-        {cells.map((row, y) => {
-          return row.map((cell, x) => (
-            <Cell x={x} y={y} parts={parts} cell={cell} key={`${x}-${y}`} />
-          ));
-        })}
-      </svg>
+    <>
+      {tour !== -1 && (
+        <Box
+          sx={{
+            width: "min(100%, 100vw)",
+            height: "min(100%, 100vh)",
+          }}
+        >
+          <svg width="100%" height="100%" viewBox={`0,0,${taille},${taille}`}>
+            {verticals.map((row, y) =>
+              row.map((cell, x) => (
+                <Vertical
+                  x={x}
+                  y={y}
+                  parts={parts}
+                  cell={cell}
+                  handleCLick={handleCLick}
+                  key={`${x}-${y}`}
+                />
+              ))
+            )}
+            {horizontals.map((row, y) =>
+              row.map((cell, x) => (
+                <Horizontal
+                  x={x}
+                  y={y}
+                  parts={parts}
+                  cell={cell}
+                  handleCLick={handleCLick}
+                  key={`${x}-${y}`}
+                />
+              ))
+            )}
+            {cells.map((row, y) => {
+              return row.map((cell, x) => (
+                <Cell x={x} y={y} parts={parts} cell={cell} key={`${x}-${y}`} />
+              ));
+            })}
+          </svg>
+        </Box>
+      )}
       {effect}
-    </Grid>
+    </>
   );
 }
 

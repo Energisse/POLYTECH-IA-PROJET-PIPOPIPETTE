@@ -1,46 +1,56 @@
-# Getting Started with Create React App
+# **Pipopipette**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![example](./example.gif)
 
-## Available Scripts
+Un projet de jeu de pipopipette interactif développé en React, intégrant plusieurs types de joueurs (humains et intelligences artificielles) pour des parties captivantes.
 
-In the project directory, you can run:
+## **Types de joueurs disponibles**
 
-### `npm start`
+Le jeu permet de choisir parmi différents types de joueurs, qu'ils soient humains ou basés sur des algorithmes d'intelligence artificielle :
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **Humain** : Un joueur humain interagit via l'interface utilisateur.
+- **Alphabeta** : IA utilisant l'algorithme Minimax avec élagage Alpha-Beta.
+- **Minimax** : IA utilisant l'algorithme Minimax standard.
+- **MCTS** : IA basée sur _Monte Carlo Tree Search_.
+- **Fastest** : Sélectionne automatiquement la meilleure solution entre Alphabeta, Minimax et MCTS en fonction du temps.
+- **Random** : Joue des coups aléatoires.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## **Paramétrage des IA**
 
-### `npm test`
+Les comportements des IA peuvent être ajustés via plusieurs paramètres pour s'adapter à vos besoins ou à vos expérimentations.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### **Paramètre général**
 
-### `npm run build`
+- **Temps minimum (ms)** : Temps minimum d'attente entre chaque coup joué par une IA pour simuler une réflexion (en millisecondes).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### **Paramètres spécifiques aux IA**
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+#### **Alphabeta & Minimax**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- **Depth (profondeur)** : Limite de profondeur pour l'exploration de l'arbre de recherche.
+- **Depth limit** : Définit un seuil pour les coups multiples consécutifs.  
+  Par exemple, si `depth limit = 2` et que l'IA peut jouer trois coups consécutifs, elle jouera deux coups avant de s'arrêter.
 
-### `npm run eject`
+#### **MCTS (Monte Carlo Tree Search)**
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+- **Iterations** : Nombre total d'itérations du processus MCTS.
+- **Simulations** : Nombre de simulations effectuées par itération.
+- **C (paramètre d'exploration)** : Facteur d'exploration, influençant le compromis entre exploration et exploitation.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## **Comment utiliser le projet ?**
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+1. **Installation** : Clonez ce dépôt et installez les dépendances :
+   ```bash
+   git clone https://github.com/Energisse/POLYTECH-IA-PROJET-PIPOPIPETTE
+   cd pipopipette
+   npm install
+   ```
+2. **Lancer l'application** : Démarrez le serveur de développement :
+   ```bash
+   npm start
+   ```
+3. **Configurer les joueurs et IA** : Configurez les paramètres directement dans l'interface utilisateur ou dans les fichiers de configuration si nécessaire.
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### **Auteur**
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Développé avec ❤️ par Thomas.

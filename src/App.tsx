@@ -1,36 +1,35 @@
 import React from "react";
-import { Grid } from "@mui/material";
+import { Grid, useMediaQuery, useTheme } from "@mui/material";
 import Game from "./Game";
 import Menu from "./Menu";
-import Treee from "./Tree";
-
-const playerList = [
-  "human",
-  "minimax",
-  "alphabeta",
-  "mcts",
-  "random",
-  "fastest",
-] as const;
-
-export type playerType = (typeof playerList)[number];
 
 function App() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
   return (
     <div className="App">
-      <Grid container height={"100%"}>
-        <Grid item xs={12}>
-          <Grid container>
-            <Grid item xs={8}>
-              <Game />
-            </Grid>
-            <Grid item xs={4}>
-              <Menu />
-            </Grid>
-          </Grid>
+      <Grid
+        container
+        p={5}
+        direction={isMobile ? "column" : "row"}
+        sx={{
+          overflowX: "hidden",
+        }}
+        height={isMobile ? "unset" : "100vh"}
+      >
+        <Grid
+          item
+          flex={1}
+          width="100%"
+          height="100%"
+          position={"relative"}
+          p={2}
+        >
+          <Game />
         </Grid>
-        <Grid flex={1} item xs={12}>
-          <Treee />
+        <Grid item width={isMobile ? "100%" : "unset"}>
+          <Menu />
         </Grid>
       </Grid>
     </div>
