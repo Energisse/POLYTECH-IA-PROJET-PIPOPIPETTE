@@ -2,7 +2,7 @@ import { Board } from "./game";
 import { MctsNode } from "./mcts";
 import negamax from "./negamax";
 import nigamax from "./nigamax";
-import pipopipetteGo from "./pipopipetteGo";
+import pipopipetteGo, { ConvLayer, HeadLayer, PolicyLayer, ResidualLayer } from "./pipopipetteGo";
 
 export interface Coup {
     x: number,
@@ -45,6 +45,7 @@ export abstract class iaPlayer extends Player {
                 this.totalTime += end - start
                 this.totalMove++
                 this.times.push(end - start)
+                console.log(result)
                 console.log(`Player ${player} (${(this as any).constructor.name}) Time: ${end - start} Average time: ${this.totalTime / this.totalMove}ms`)
                 return result
             })(),
@@ -202,11 +203,8 @@ export class AlphaBetaPlayer extends iaPlayer {
 }
 
 export class PipopipetteGo extends iaPlayer {
-
     playIa(board: Board, player: 0 | 1) {
-
-        pipopipetteGo(board, player).then(console.log)
-        return new RandomPlayer().playIa(board, player)
+        return pipopipetteGo(board, player)
     }
 }
 

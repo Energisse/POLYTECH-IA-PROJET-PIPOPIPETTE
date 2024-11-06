@@ -13,7 +13,7 @@ export default class Game extends EventTarget {
   public async play() {
     await this.players[this.board.getTour()].play(this.board, this.board.getTour()).then((coup) => {
       this.board.play(coup.orientation, coup.x, coup.y);
-      if (!this.board.isFinished()) this.play();
+      if (!this.board.isFinished()) return this.play();
     });
   }
 }
