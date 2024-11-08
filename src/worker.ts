@@ -1,5 +1,6 @@
 import { MainToWorkerEventMap } from "./@types/worker";
-import Game, { playValue, playerValue } from "./utils/game";
+import { PlayerValue, PlayValue } from "./utils/board";
+import Game from "./utils/game";
 import { AlphaBetaPlayer, FastestPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, RandomPlayer } from "./utils/player";
 
 declare var self: DedicatedWorkerGlobalScope;
@@ -84,17 +85,17 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
     }
 
     self.emit("change", {
-        verticals: game.board.getVerticals(),
-        horizontals: game.board.getHorizontals(),
-        score: game.board.getScore(),
-        tour: game.board.getTour(),
-        cells: game.board.getCells()
+        verticals: game.getBoard().getVerticals(),
+        horizontals: game.getBoard().getHorizontals(),
+        score: game.getBoard().getScore(),
+        tour: game.getBoard().getTour(),
+        cells: game.getBoard().getCells()
     });
 
-    game.board.addEventListener("end", (e) => {
+    game.addEventListener("end", (e) => {
         const { winner } = (
             e as CustomEvent<{
-                winner: playerValue
+                winner: PlayerValue
             }>
         ).detail;
         self.emit("end", {
@@ -102,21 +103,43 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
         });
     });
 
-    game.board.addEventListener("boardChange", (e) => {
-        const { verticals, horizontals, cells } = (
+    game.addEventListener("played", (e) => {
+        const { board: {
+            cells,
+            verticals,
+            horizontals,
+            player,
+            score
+        } } = (
             e as CustomEvent<{
-                verticals: playValue[][];
-                horizontals: playValue[][];
-                cells: playValue[][];
+                played: {
+                    x: number;
+                    y: number;
+                    orientation: string;
+                    player: PlayerValue;
+                };
+                board: {
+                    verticals: ReadonlyArray<ReadonlyArray<PlayValue>>;
+                    horizontals: ReadonlyArray<ReadonlyArray<PlayValue>>;
+                    cells: ReadonlyArray<ReadonlyArray<PlayValue>>;
+                    score: readonly [number, number];
+                    player: PlayerValue;
+                };
             }>
         ).detail;
 
         self.emit("change", {
             verticals,
             horizontals,
-            score: game!.board.getScore(),
-            tour: game!.board.getTour(),
+            score: score,
+            tour: player,
             cells
+        });
+    });
+
+    game.start().then(() => {
+        self.emit("end", {
+            winner: game!.getBoard().getWinner()
         });
     });
 });

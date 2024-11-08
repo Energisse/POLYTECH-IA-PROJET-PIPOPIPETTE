@@ -47,11 +47,11 @@ export interface MainToWorkerEventMap {
 
 export interface WorkerToMainEventMap {
     "change": CustomEvent<{
-        verticals: playValue[][],
-        horizontals: playValue[][],
-        score: [number, number],
-        tour: playerValue,
-        cells: playValue[][]
+        verticals: ReadonlyArray<ReadonlyArray<playValue>>,
+        horizontals: ReadonlyArray<ReadonlyArray<playValue>>,
+        score: readonly [number, number],
+        tour: readonly playerValue,
+        cells: ReadonlyArray<ReadonlyArray<playValue>>
     }>,
     "end": CustomEvent<{
         winner: playerValue

@@ -1,7 +1,6 @@
-import { Board, playerValue } from "./game";
-import { Coup } from "./player";
+import { Board, PlayerValue } from "./board";
 
-export default function negamax(board: Board, _depth: number, maximizingPlayer: boolean, idPlayer: playerValue): {
+export default function negamax(board: Board, _depth: number, maximizingPlayer: boolean, idPlayer: PlayerValue): {
   x: number;
   y: number;
   value: number;

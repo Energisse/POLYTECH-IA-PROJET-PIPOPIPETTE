@@ -1,4 +1,4 @@
-import { Board } from "./game";
+import { Board } from "./board";
 import { MctsNode } from "./mcts";
 import negamax from "./negamax";
 import nigamax from "./nigamax";
@@ -119,8 +119,7 @@ export class MctsPlayer extends iaPlayer {
             this.dispatchEvent(new CustomEvent("tree", { detail: root }));
             let bestChild = root.getBestChild();
             this.lastNode = bestChild.bestNode;
-            board.play(bestChild.orientation, bestChild.x, bestChild.y);
-            this.lastBoard = board.copy();
+            this.lastBoard = board.play(bestChild.orientation, bestChild.x, bestChild.y);
             resolve({ x: bestChild.x, y: bestChild.y, orientation: bestChild.orientation });
         })
     }

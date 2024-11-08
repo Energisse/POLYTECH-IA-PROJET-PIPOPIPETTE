@@ -1,4 +1,4 @@
-import { Board } from "./utils/game";
+import { Board } from "./utils/board";
 import { AlphaBetaPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, Player, RandomPlayer } from "./utils/player";
 
 declare var self: DedicatedWorkerGlobalScope;

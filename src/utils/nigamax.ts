@@ -1,6 +1,6 @@
-import { Board, playerValue } from "./game";
+import { Board, PlayerValue } from "./board";
 
-export default function nigamax(board: Board, _depth: number, maximizingPlayer: boolean, idPlayer: playerValue, alpha: number = -Infinity, beta: number = Infinity): {
+export default function nigamax(board: Board, _depth: number, maximizingPlayer: boolean, idPlayer: PlayerValue, alpha: number = -Infinity, beta: number = Infinity): {
   x: number;
   y: number;
   value: number;

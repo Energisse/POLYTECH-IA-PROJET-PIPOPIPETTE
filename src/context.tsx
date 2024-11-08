@@ -1,10 +1,11 @@
 import { ReactNode, createContext, useMemo, useState } from "react";
+import { PlayValue } from "./utils/board";
 
 type MyContextData = {
-  verticals: Array<Array<number>>;
-  horizontals: Array<Array<number>>;
-  cells: Array<Array<number>>;
-  score: [number, number];
+  verticals: ReadonlyArray<ReadonlyArray<PlayValue>>;
+  horizontals: ReadonlyArray<ReadonlyArray<PlayValue>>;
+  cells: ReadonlyArray<ReadonlyArray<PlayValue>>;
+  score: readonly [number, number];
   winner: number;
   tour: number;
   tree: any;
@@ -57,11 +58,17 @@ Worker.prototype.emit = function (...data) {
 };
 
 const MyContextProvider = ({ children }: { children: ReactNode }) => {
-  const [verticals, setVerticals] = useState<Array<Array<-1 | 0 | 1>>>([]);
-  const [horizontals, setHorizontals] = useState<Array<Array<-1 | 0 | 1>>>([]);
-  const [cells, setCells] = useState<Array<Array<-1 | 0 | 1>>>([]);
-  const [score, setScore] = useState<[number, number]>([0, 0]);
-  const [winner, setWinner] = useState<-1 | 0 | 1>(-1);
+  const [verticals, setVerticals] = useState<
+    ReadonlyArray<ReadonlyArray<PlayValue>>
+  >([]);
+  const [horizontals, setHorizontals] = useState<
+    ReadonlyArray<ReadonlyArray<PlayValue>>
+  >([]);
+  const [cells, setCells] = useState<ReadonlyArray<ReadonlyArray<PlayValue>>>(
+    []
+  );
+  const [score, setScore] = useState<readonly [number, number]>([0, 0]);
+  const [winner, setWinner] = useState<PlayValue>(-1);
   const [tour, setTour] = useState<0 | 1>(0);
   const [tree, setTree] = useState<Data>({ name: "root", children: [] });
   const [size, setSize] = useState<number>(0);
@@ -110,10 +117,10 @@ const MyContextProvider = ({ children }: { children: ReactNode }) => {
         });
         game.addEventListener("change", (e) => {
           const { verticals, horizontals, cells, score, tour } = e.detail;
-          setVerticals([...verticals]);
-          setHorizontals([...horizontals]);
-          setCells([...cells]);
-          setScore([...score]);
+          setVerticals(verticals);
+          setHorizontals(horizontals);
+          setCells(cells);
+          setScore(score);
           setTour(tour);
         });
         game.addEventListener("end", (e) => {
