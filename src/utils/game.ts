@@ -3,6 +3,7 @@ import { Player } from "./player";
 export default class Game extends EventTarget {
   private board: Board;
   private players: [Player, Player];
+  private playing: boolean = false;
 
   constructor(size: number, player1: Player, player2: Player) {
     super();
@@ -16,6 +17,8 @@ export default class Game extends EventTarget {
   }
 
   private async play() {
+    if (this.playing) return;
+    this.playing = true;
     while (!this.board.isFinished()) {
       await this.players[this.board.getTour()].play(this.board, this.board.getTour()).then((coup) => {
         const newBoard = this.board.play(coup.orientation, coup.x, coup.y)

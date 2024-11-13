@@ -84,10 +84,16 @@ export class Board {
         let newTour = this.tour;
 
         if (orientation === "vertical") {
-            if (newVerticals[y][x] !== -1) throw new Error("Invalid move");
+            if (newVerticals[y][x] !== -1) {
+                console.error("Invalid move " + orientation + x + y)
+                return null;
+            }
             newVerticals[y][x] = this.tour;
         } else {
-            if (newHorizontals[y][x] !== -1) throw new Error("Invalid move");
+            if (newHorizontals[y][x] !== -1) {
+                console.error("Invalid move " + orientation + x + y);
+                return null;
+            }
             newHorizontals[y][x] = this.tour;
 
 
@@ -161,11 +167,19 @@ export class Board {
                 .filter(({ value }) => value === -1)
         ]
 
-        while (playable.length > 0) {
-            const { x, y, orientation } = playable.splice(
-                Math.floor(Math.random() * playable.length),
-                1
-            )[0];
+        let currentIndex = playable.length;
+        while (currentIndex !== 0) {
+
+            let randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+
+            // And swap it with the current element.
+            [playable[currentIndex], playable[randomIndex]] = [
+                playable[randomIndex], playable[currentIndex]];
+        }
+
+        for (let i = 0; i < playable.length; i++) {
+            const { x, y, orientation } = playable[i];
             const board = this.play(orientation, x, y)!;
             if (board.tour === board.previousBoard!.tour && !board.isFinished()) {
                 for (const node of board.getNodes()) {

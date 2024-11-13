@@ -74,12 +74,13 @@ export class MctsNode {
     }
 
     private simulate() {
-        let gen = this.board.getNodes();
-        let result: Board = this.board
-        for (let node of gen) {
-            result = result.play(node.orientation, node.x, node.y)!;
+        let board = this.board;
+        while (true) {
+            const { value, done } = board.getNodes().next();
+            if (done) break;
+            board = value.board
         }
-        return result.getWinner() === this.player;
+        return board.getWinner() === this.player;
     }
 
     private expansion() {
