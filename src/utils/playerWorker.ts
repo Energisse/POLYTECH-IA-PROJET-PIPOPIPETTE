@@ -1,5 +1,10 @@
-import { Board } from "./utils/board";
-import { AlphaBetaPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, Player, RandomPlayer } from "./utils/player";
+import { Board } from "./board";
+import { AlphaBetaPlayer } from "./players/AlphaBetaPlayer";
+import { HumanPlayer } from "./players/HumanPlayer";
+import { MctsPlayer } from "./players/MCTSPlayer";
+import { MinimaxPlayer } from "./players/MinimaxPlayer";
+import { Player } from "./players/Player";
+import { RandomPlayer } from "./players/RandomPlayer";
 
 declare var self: DedicatedWorkerGlobalScope;
 
@@ -33,12 +38,8 @@ self.addEventListener("message", ({ data: { board, player, type } }: {
     }
 
 
-    playerType.play(new Board(board), player).then((coup) => {
-        self.postMessage(coup);
-    })
+    playerType.play(new Board(board), player).then(self.postMessage)
 });
-
-
 
 export { };
 

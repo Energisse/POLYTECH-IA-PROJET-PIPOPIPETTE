@@ -1,5 +1,5 @@
 import { Board } from "./board";
-import { Player } from "./player";
+import { Player } from "./players/Player";
 export default class Game extends EventTarget {
   private board: Board;
   private players: [Player, Player];
@@ -20,7 +20,7 @@ export default class Game extends EventTarget {
     if (this.playing) return;
     this.playing = true;
     while (!this.board.isFinished()) {
-      await this.players[this.board.getTour()].play(this.board, this.board.getTour()).then((coup) => {
+      await this.players[this.board.tour].play(this.board, this.board.tour).then((coup) => {
         const newBoard = this.board.play(coup.orientation, coup.x, coup.y)
         if (newBoard) {
           this.board = newBoard;
@@ -29,19 +29,13 @@ export default class Game extends EventTarget {
               played: {
                 x: coup.x, y: coup.y, orientation: coup.orientation, player: newBoard.previousBoard!.tour
               },
-              board: {
-                verticals: this.board.getVerticals(),
-                horizontals: this.board.getHorizontals(),
-                cells: this.board.getCells(),
-                score: this.board.getScore(),
-                player: this.board.getTour()
-              }
+              board: this.board
             }
           }));
         }
       });
     }
-    const [player1, player2] = this.board.getScore();
+    const [player1, player2] = this.board.score
 
     this.dispatchEvent(new CustomEvent("end", {
       detail: {

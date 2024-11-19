@@ -1,7 +1,12 @@
 import { MainToWorkerEventMap } from "./@types/worker";
 import { PlayerValue, PlayValue } from "./utils/board";
 import Game from "./utils/game";
-import { AlphaBetaPlayer, FastestPlayer, HumanPlayer, MctsPlayer, MinimaxPlayer, RandomPlayer } from "./utils/player";
+import { AlphaBetaPlayer } from "./utils/players/AlphaBetaPlayer";
+import { FastestPlayer } from "./utils/players/FastestPlayer";
+import { HumanPlayer } from "./utils/players/HumanPlayer";
+import { MctsPlayer } from "./utils/players/MCTSPlayer";
+import { MinimaxPlayer } from "./utils/players/MinimaxPlayer";
+import { RandomPlayer } from "./utils/players/RandomPlayer";
 
 declare var self: DedicatedWorkerGlobalScope;
 
@@ -85,11 +90,11 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
     }
 
     self.emit("change", {
-        verticals: game.getBoard().getVerticals(),
-        horizontals: game.getBoard().getHorizontals(),
-        score: game.getBoard().getScore(),
-        tour: game.getBoard().getTour(),
-        cells: game.getBoard().getCells()
+        verticals: game.getBoard().verticals,
+        horizontals: game.getBoard().horizontals,
+        score: game.getBoard().score,
+        tour: game.getBoard().tour,
+        cells: game.getBoard().cells
     });
 
     game.addEventListener("end", (e) => {

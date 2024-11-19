@@ -1,5 +1,3 @@
-import { Coup } from "./player";
-
 export type NodeGenerator = Generator<
     {
         x: number;
@@ -10,6 +8,12 @@ export type NodeGenerator = Generator<
     void,
     void
 >;
+
+export interface Coup {
+    x: number,
+    y: number,
+    orientation: "vertical" | "horizontal"
+}
 
 export type PlayValue = -1 | 0 | 1;
 export type PlayerValue = 0 | 1;
@@ -45,30 +49,10 @@ export class Board {
         }
     }
 
-    public getCells(): ReadonlyArray<ReadonlyArray<PlayValue>> {
-        return this.cells;
-    }
-
-    public getVerticals(): ReadonlyArray<ReadonlyArray<PlayValue>> {
-        return this.verticals;
-    }
-
-    public getHorizontals(): ReadonlyArray<ReadonlyArray<PlayValue>> {
-        return this.horizontals;
-    }
-
-    public getScore(): readonly [number, number] {
-        return this.score;
-    }
-
     public getWinner(): 0 | 1 | null {
         if (this.score[0] > this.cells.length ** 2 / 2) return 0;
         if (this.score[1] > this.cells.length ** 2 / 2) return 1;
         return null;
-    }
-
-    public getTour(): PlayerValue {
-        return this.tour;
     }
 
     public play(
