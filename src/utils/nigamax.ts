@@ -1,6 +1,6 @@
 import { Board, PlayerValue } from "./board";
 
-export default function nigamax(board: Board, _depth: number, maximizingPlayer: boolean, idPlayer: PlayerValue, alpha: number = -Infinity, beta: number = Infinity): {
+export default function nigamax(board: Board, _depth: number, maximizingPlayer: boolean, idPlayer: PlayerValue, depthLimit?: number): {
   x: number;
   y: number;
   value: number;
@@ -14,7 +14,7 @@ export default function nigamax(board: Board, _depth: number, maximizingPlayer: 
       return board.evaluation(idPlayer) * (maximizingPlayer ? 1 : -1)
     }
     let value = -Infinity;
-    for (const { board: node, x: _x, y: _y, orientation: _orientation } of board.getNodes()) {
+    for (const { board: node, x: _x, y: _y, orientation: _orientation } of board.getNodes(depthLimit)) {
       nodes++;
       const result = _nigamax(node, depth - 1, !maximizingPlayer, -beta, -alpha);
       if (-result > value) {
@@ -33,7 +33,7 @@ export default function nigamax(board: Board, _depth: number, maximizingPlayer: 
     return value;
   }
 
-  const value = _nigamax(board, _depth, maximizingPlayer, alpha, beta)
+  const value = _nigamax(board, _depth, maximizingPlayer)
   return {
     value,
     x,

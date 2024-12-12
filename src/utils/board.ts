@@ -139,7 +139,7 @@ export class Board {
     }
 
 
-    public *getNodes(): NodeGenerator {
+    public *getNodes(depthLimit?: number): NodeGenerator {
         const playable = [
             ...this.verticals
                 .flatMap((row, y) => row.map((value, x) => ({ x, y, value, orientation: "vertical" } satisfies Coup & { value: number })))
@@ -163,8 +163,8 @@ export class Board {
         for (let i = 0; i < playable.length; i++) {
             const { x, y, orientation } = playable[i];
             const board = this.play(orientation, x, y)!;
-            if (board.tour === board.previousBoard!.tour && !board.isFinished()) {
-                for (const node of board.getNodes()) {
+            if (board.tour === board.previousBoard!.tour && !board.isFinished() && (depthLimit === undefined || depthLimit > 0)) {
+                for (const node of board.getNodes(depthLimit ? depthLimit - 1 : undefined)) {
                     yield { ...node, x, y, orientation };
                 }
             } else yield { x, y, board, orientation };

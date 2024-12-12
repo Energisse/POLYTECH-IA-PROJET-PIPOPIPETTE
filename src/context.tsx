@@ -20,6 +20,7 @@ export type PlayerConfig = {
   c: number;
   type: PlayerType;
   minTimeToPlay: number;
+  depthLimit?: number;
 };
 
 type MyContextData = {

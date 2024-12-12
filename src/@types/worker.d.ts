@@ -6,10 +6,12 @@ type PlayerStartEvent = {
 } | {
     type: "random",
     minTimeToPlay: number
+    depthLimit?: number
 } | {
     type: "minimax" | "alphabeta",
     depth: number
     minTimeToPlay: number
+    depthLimit?: number
 } | {
     type: "mcts",
     iteration: number,
@@ -23,6 +25,7 @@ type PlayerStartEvent = {
     simulation: number,
     c: number
     minTimeToPlay: number
+    depthLimit?: number
 }
 
 export interface MainToWorkerEventMap {

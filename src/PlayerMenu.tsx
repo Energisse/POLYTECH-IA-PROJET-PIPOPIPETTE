@@ -16,6 +16,7 @@ export default function PlayerMenu({
   setPlayerConfig,
   color,
   minTimeToPlay,
+  depthLimit,
 }: PlayerConfig & {
   setPlayerConfig: (config: Partial<PlayerConfig>) => void;
 } & Pick<ButtonProps, "color">) {
@@ -43,13 +44,22 @@ export default function PlayerMenu({
         />
       )}
       {(type === "minimax" || type === "alphabeta" || type === "fastest") && (
-        <TextField
-          label="depth"
-          value={depth}
-          type="number"
-          onChange={(e) => setPlayerConfig({ depth: +e.target.value })}
-          fullWidth
-        />
+        <>
+          <TextField
+            label="depth"
+            value={depth}
+            type="number"
+            onChange={(e) => setPlayerConfig({ depth: +e.target.value })}
+            fullWidth
+          />
+          <TextField
+            label="depth limit"
+            value={depthLimit}
+            type="number"
+            onChange={(e) => setPlayerConfig({ depthLimit: +e.target.value })}
+            fullWidth
+          />
+        </>
       )}
       {(type === "mcts" || type === "fastest") && (
         <Grid container>
