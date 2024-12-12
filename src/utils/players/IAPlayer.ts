@@ -16,9 +16,9 @@ export abstract class IaPlayer extends Player {
      * 
      * @param {number} minTimeToPlay - Le temps minimal pour jouer un coup.
      */
-    constructor(minTimeToPlay: number = 500) {
+    constructor({ minTimeToPlay }: { minTimeToPlay?: number }) {
         super()
-        this.minTimeToPlay = minTimeToPlay;
+        this.minTimeToPlay = minTimeToPlay || 500;
     }
 
     /**

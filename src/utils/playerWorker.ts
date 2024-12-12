@@ -19,12 +19,6 @@ self.addEventListener("message", ({ data: { board, player, type, parameters } }:
 }) => {
     let playerType: Player;
     switch (type) {
-        case "human":
-            playerType = new HumanPlayer()
-            break;
-        case "random":
-            playerType = new RandomPlayer()
-            break;
         case "minimax":
             playerType = new MinimaxPlayer(parameters)
             break;

@@ -19,6 +19,7 @@ export type PlayerConfig = {
   simulation: number;
   c: number;
   type: PlayerType;
+  minTimeToPlay: number;
 };
 
 type MyContextData = {
@@ -28,7 +29,6 @@ type MyContextData = {
   score: readonly [number, number];
   winner: number;
   tour: number;
-  tree: any;
   size: number;
   play: (coup: Coup) => void;
   createGame: (players: [PlayerConfig, PlayerConfig], size: number) => void;
@@ -41,17 +41,11 @@ const MyContext = createContext<MyContextData>({
   play: (coup: Coup) => {},
   horizontals: [],
   score: [0, 0],
-  tour: 0,
-  tree: { name: "root", children: [] },
+  tour: -1,
   verticals: [],
   winner: 0,
   size: 0,
 });
-
-type Data = {
-  name: string;
-  children: Data[];
-};
 
 Worker.prototype.emit = function (...data) {
   this.postMessage({ type: data[0], data: data[1] });
@@ -69,8 +63,7 @@ const MyContextProvider = ({ children }: { children: ReactNode }) => {
   );
   const [score, setScore] = useState<readonly [number, number]>([0, 0]);
   const [winner, setWinner] = useState<PlayValue>(-1);
-  const [tour, setTour] = useState<0 | 1>(0);
-  const [tree, setTree] = useState<Data>({ name: "root", children: [] });
+  const [tour, setTour] = useState<0 | 1 | -1>(-1);
   const [size, setSize] = useState<number>(0);
 
   const game = useRef<Worker | null>(null);
@@ -89,6 +82,7 @@ const MyContextProvider = ({ children }: { children: ReactNode }) => {
         });
         game.current.addEventListener("change", (e) => {
           const { verticals, horizontals, cells, score, tour } = e.detail;
+          console.log(tour);
           setVerticals(verticals);
           setHorizontals(horizontals);
           setCells(cells);
@@ -116,14 +110,13 @@ const MyContextProvider = ({ children }: { children: ReactNode }) => {
       score,
       winner,
       tour,
-      tree,
       size,
       play: (coup: Coup) => {
         game.current?.emit("play", coup);
       },
       ...context,
     };
-  }, [verticals, horizontals, cells, score, winner, tour, tree, size, context]);
+  }, [verticals, horizontals, cells, score, winner, tour, size, context]);
 
   return <MyContext.Provider value={value}>{children}</MyContext.Provider>;
 };

@@ -5,9 +5,9 @@ import { IaPlayer } from "./IAPlayer";
 export class AlphaBetaPlayer extends IaPlayer {
     private depth: number;
 
-    constructor({ depth }: { depth: number }) {
-        super();
-        this.depth = depth;
+    constructor(paramters: { depth: number, minTimeToPlay?: number }) {
+        super(paramters);
+        this.depth = paramters.depth;
     }
 
     playIa(board: Board, player: PlayerValue) {

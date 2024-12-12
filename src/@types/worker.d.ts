@@ -2,21 +2,27 @@ import { playValue, playerValue } from "../utils/game"
 
 
 type PlayerStartEvent = {
-    type: "human" | "random",
+    type: "human"
+} | {
+    type: "random",
+    minTimeToPlay: number
 } | {
     type: "minimax" | "alphabeta",
     depth: number
+    minTimeToPlay: number
 } | {
     type: "mcts",
     iteration: number,
     simulation: number,
     c: number
+    minTimeToPlay: number
 } | {
     type: "fastest",
     depth: number
     iteration: number,
     simulation: number,
     c: number
+    minTimeToPlay: number
 }
 
 export interface MainToWorkerEventMap {
@@ -43,7 +49,6 @@ export interface WorkerToMainEventMap {
     "end": CustomEvent<{
         winner: playerValue
     }>,
-    "tree": CustomEvent<any>
 }
 
 declare global {

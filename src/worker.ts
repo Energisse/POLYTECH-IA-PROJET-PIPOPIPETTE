@@ -22,54 +22,11 @@ self.addEventListener("message", ({ data: { data, type } }) => {
 
 let game: Game | null = null;
 
-type Node = {
-    visits: number,
-    wins: number,
-    nodes: Map<string, Map<number, Map<number, Node>>>
-}
-
-type Data = {
-    name: string,
-    children: Data[]
-}
-
-function formatNode(node: Node): Data {
-    const children = new Array<Data>();
-    node.nodes.forEach((row, orientation) => {
-        row.forEach((cell, x) => {
-            cell.forEach((node, y) => {
-                children.push(formatNode(node));
-            });
-        });
-    });
-
-    return {
-        name: `${node.wins}/${node.visits}`,
-        children
-    }
-
-}
-
 self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
     if (game) return;
 
     const player1Instance = createPlayer(player1);
     const player2Instance = createPlayer(player2);
-
-    player1Instance.addEventListener("tree", (e) => {
-        self.emit("tree", {
-            player: 1,
-            tree: formatNode((e as CustomEvent<Node>).detail)
-        });
-    });
-
-    player2Instance.addEventListener("tree", (e) => {
-        self.emit("tree", {
-            player: 2,
-            tree: formatNode((e as CustomEvent<Node>).detail)
-        });
-    });
-
 
     game = new Game(size, player1Instance, player2Instance);
 
@@ -89,13 +46,7 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
         });
     }
 
-    self.emit("change", {
-        verticals: game.getBoard().verticals,
-        horizontals: game.getBoard().horizontals,
-        score: game.getBoard().score,
-        tour: game.getBoard().tour,
-        cells: game.getBoard().cells
-    });
+    self.emit("change", game.getBoard());
 
     game.addEventListener("end", (e) => {
         const { winner } = (
@@ -109,13 +60,7 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
     });
 
     game.addEventListener("played", (e) => {
-        const { board: {
-            cells,
-            verticals,
-            horizontals,
-            player,
-            score
-        } } = (
+        const { board } = (
             e as CustomEvent<{
                 played: {
                     x: number;
@@ -128,18 +73,12 @@ self.addEventListener("start", ({ detail: { player1, player2, size } }) => {
                     horizontals: ReadonlyArray<ReadonlyArray<PlayValue>>;
                     cells: ReadonlyArray<ReadonlyArray<PlayValue>>;
                     score: readonly [number, number];
-                    player: PlayerValue;
+                    tour: PlayerValue;
                 };
             }>
         ).detail;
 
-        self.emit("change", {
-            verticals,
-            horizontals,
-            score: score,
-            tour: player,
-            cells
-        });
+        self.emit("change", board);
     });
 
     game.start().then(() => {
@@ -155,7 +94,7 @@ function createPlayer(player: MainToWorkerEventMap["start"]["detail"]["player1"]
         case "human":
             return new HumanPlayer();
         case "random":
-            return new RandomPlayer();
+            return new RandomPlayer(player);
         case "minimax":
             return new MinimaxPlayer(player);
         case "alphabeta":

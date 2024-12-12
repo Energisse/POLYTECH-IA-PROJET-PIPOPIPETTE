@@ -1,38 +1,30 @@
-import { Button, ButtonGroup, Grid, Slider, TextField } from "@mui/material";
+import { Box, Button, Grid, Paper, Slider, Typography } from "@mui/material";
 import { useContext, useState } from "react";
-import { MyContext, playerList, PlayerType } from "./context";
+import { MyContext } from "./context";
+import { PlayerConfig } from "./context";
+import PlayerMenu from "./PlayerMenu";
 
 function Menu() {
-  const { createGame } = useContext(MyContext);
+  const { createGame, score, tour } = useContext(MyContext);
 
   const [size, setSize] = useState<number>(3);
 
-  const [player1, setPlayer1] = useState<PlayerType>("human");
-
-  const [player2, setPlayer2] = useState<PlayerType>("human");
-
-  const [configJoeur1, setConfigJoueur1] = useState<{
-    depth: number;
-    iteration: number;
-    simulation: number;
-    c: number;
-  }>({
+  const [configJoeur1, setConfigJoueur1] = useState<PlayerConfig>({
     depth: 3,
     iteration: 100,
     simulation: 100,
     c: Math.sqrt(2),
+    type: "human",
+    minTimeToPlay: 500,
   });
 
-  const [configJoeur2, setConfigJoueur2] = useState<{
-    depth: number;
-    iteration: number;
-    simulation: number;
-    c: number;
-  }>({
+  const [configJoeur2, setConfigJoueur2] = useState<PlayerConfig>({
     depth: 3,
     iteration: 100,
     simulation: 100,
     c: Math.sqrt(2),
+    type: "human",
+    minTimeToPlay: 500,
   });
 
   const handleChange = (event: Event, newValue: number | number[]) => {
@@ -40,187 +32,75 @@ function Menu() {
   };
 
   return (
-    <Grid container>
-      <Grid item xs={12}>
-        <Slider
-          value={size}
-          onChange={handleChange}
-          min={2}
-          max={10}
-          step={1}
-          valueLabelDisplay="auto"
-          marks
-        />
-      </Grid>
-      <Grid item xs={12}>
-        <Grid container>
-          <Grid item>
-            <ButtonGroup orientation="vertical">
-              {playerList.map((player, index) => (
-                <Button
-                  variant={player1 === player ? "contained" : "outlined"}
-                  color="error"
-                  onClick={() => setPlayer1(player as PlayerType)}
-                  key={index}
-                >
-                  {player}
-                </Button>
-              ))}
-            </ButtonGroup>
+    <Grid container gap={2} flexDirection={"column"}>
+      <Paper elevation={1}>
+        <Box p={2}>
+          <Typography>Size : {size}</Typography>
+
+          <Slider
+            value={size}
+            onChange={handleChange}
+            min={2}
+            max={10}
+            step={1}
+            valueLabelDisplay="auto"
+            marks
+          />
+        </Box>
+      </Paper>
+      <Paper
+        elevation={1}
+        sx={
+          tour === 0
+            ? {
+                boxShadow: " 0px 0px 20px 2px #FF0000",
+              }
+            : {}
+        }
+      >
+        <Grid container direction={"column"} gap={2} p={2}>
+          <Grid container justifyContent={"space-between"}>
+            <Typography>Player 1</Typography>
+            <Typography> {score[0]}</Typography>
           </Grid>
-          <Grid item flex={1}>
-            <Grid container rowGap={2}>
-              <Grid item xs={6}>
-                <TextField
-                  label="depth"
-                  value={configJoeur1.depth}
-                  type="number"
-                  onChange={(e) =>
-                    setConfigJoueur1((prev) => ({
-                      ...prev,
-                      depth: +e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="iterations"
-                  value={configJoeur1.iteration}
-                  type="number"
-                  onChange={(e) =>
-                    setConfigJoueur1((prev) => ({
-                      ...prev,
-                      iteration: +e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="simulation"
-                  value={configJoeur1.simulation}
-                  type="number"
-                  onChange={(e) =>
-                    setConfigJoueur1((prev) => ({
-                      ...prev,
-                      simulation: +e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="c"
-                  value={configJoeur1.c}
-                  type="number"
-                  onChange={(e) =>
-                    setConfigJoueur1((prev) => ({
-                      ...prev,
-                      c: +e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-            </Grid>
-          </Grid>
+          <PlayerMenu
+            {...configJoeur1}
+            setPlayerConfig={(config) => {
+              setConfigJoueur1({ ...configJoeur1, ...config });
+            }}
+            color="error"
+          />
         </Grid>
-      </Grid>
+      </Paper>
       <Grid item xs={12}>
-        <Grid container>
-          <Grid item>
-            <ButtonGroup orientation="vertical">
-              {playerList.map((player, index) => (
-                <Button
-                  variant={player2 === player ? "contained" : "outlined"}
-                  onClick={() => setPlayer2(player as PlayerType)}
-                  key={index}
-                >
-                  {player}
-                </Button>
-              ))}
-            </ButtonGroup>
-          </Grid>
-          <Grid item flex={1}>
-            <Grid container rowGap={2}>
-              <Grid item xs={6}>
-                <TextField
-                  label="depth"
-                  value={configJoeur2.depth}
-                  type="number"
-                  onChange={(e) =>
-                    setConfigJoueur2((prev) => ({
-                      ...prev,
-                      depth: +e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="iterations"
-                  value={configJoeur2.iteration}
-                  type="number"
-                  onChange={(e) =>
-                    setConfigJoueur2((prev) => ({
-                      ...prev,
-                      iteration: +e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="simulation"
-                  value={configJoeur2.simulation}
-                  type="number"
-                  onChange={(e) =>
-                    setConfigJoueur2((prev) => ({
-                      ...prev,
-                      simulation: +e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <TextField
-                  label="c"
-                  value={configJoeur2.c}
-                  type="number"
-                  onChange={(e) =>
-                    setConfigJoueur2((prev) => ({
-                      ...prev,
-                      c: +e.target.value,
-                    }))
-                  }
-                />
-              </Grid>
+        <Paper
+          elevation={1}
+          sx={
+            tour === 1
+              ? {
+                  boxShadow: " 0px 0px 20px 2px #0000FF",
+                }
+              : {}
+          }
+        >
+          <Grid container direction={"column"} gap={2} p={2}>
+            <Grid container justifyContent={"space-between"}>
+              <Typography>Player 2</Typography>
+              <Typography> {score[1]}</Typography>
             </Grid>
+            <PlayerMenu
+              {...configJoeur2}
+              setPlayerConfig={(config) => {
+                setConfigJoueur2({ ...configJoeur2, ...config });
+              }}
+            />
           </Grid>
-        </Grid>
+        </Paper>
       </Grid>
       <Grid item xs={12}>
         <Button
           onClick={() => {
-            createGame(
-              [
-                {
-                  c: configJoeur1.c,
-                  depth: configJoeur1.depth,
-                  iteration: configJoeur1.iteration,
-                  simulation: configJoeur1.simulation,
-                  type: player1,
-                },
-                {
-                  c: configJoeur2.c,
-                  depth: configJoeur2.depth,
-                  iteration: configJoeur2.iteration,
-                  simulation: configJoeur2.simulation,
-                  type: player2,
-                },
-              ],
-              size
-            );
+            createGame([configJoeur1, configJoeur2], size);
           }}
         >
           start

@@ -11,7 +11,7 @@ import { MinimaxPlayer } from "./MinimaxPlayer";
  */
 export class FastestPlayer extends IaPlayer {
 
-    readonly parameters: ConstructorParameters<typeof MinimaxPlayer>[0] & ConstructorParameters<typeof AlphaBetaPlayer>[0] & ConstructorParameters<typeof MctsPlayer>[0];
+    readonly parameters: ConstructorParameters<typeof MinimaxPlayer>[0] & ConstructorParameters<typeof AlphaBetaPlayer>[0] & ConstructorParameters<typeof MctsPlayer>[0]
 
     /*
      * Les IA à jouer.
@@ -23,7 +23,7 @@ export class FastestPlayer extends IaPlayer {
      * @param {number} depth - La profondeur de recherche.
      */
     constructor(parameters: ConstructorParameters<typeof MinimaxPlayer>[0] & ConstructorParameters<typeof AlphaBetaPlayer>[0] & ConstructorParameters<typeof MctsPlayer>[0]) {
-        super();
+        super(parameters);
         this.parameters = parameters;
     }
 

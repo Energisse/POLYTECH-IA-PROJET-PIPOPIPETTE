@@ -41,11 +41,11 @@ export class MctsPlayer extends IaPlayer {
      * @param {number} c - La constante C pour l'exploration.
      * @param {number} minTimeToPlay - Le temps minimal pour jouer un coup.
      */
-    constructor({ iteration, simulation, c, minTimeToPlay }: { iteration: number, simulation: number, c?: number, minTimeToPlay?: number }) {
-        super(minTimeToPlay);
-        this.iteration = iteration;
-        this.simulation = simulation;
-        this.c = c || Math.sqrt(2);
+    constructor(parameters: { iteration: number, simulation: number, c?: number, minTimeToPlay?: number }) {
+        super(parameters);
+        this.iteration = parameters.iteration;
+        this.simulation = parameters.simulation;
+        this.c = parameters.c || Math.sqrt(2);
     }
 
 

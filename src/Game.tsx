@@ -38,43 +38,19 @@ function Game() {
   const { width, height } = useWindowSize();
 
   const effect = useMemo(() => {
-    if (winner === 0) {
-      return (
-        <Confetti
-          numberOfPieces={1000}
-          width={width}
-          height={height}
-          colors={["red"]}
-        />
-      );
-    } else if (winner === 1) {
-      return (
-        <Confetti
-          numberOfPieces={1000}
-          width={width}
-          height={height}
-          colors={["blue"]}
-        />
-      );
-    }
-    return null;
+    if (winner === -1) return null;
+    return (
+      <Confetti
+        numberOfPieces={1000}
+        width={width}
+        height={height}
+        colors={winner === 0 ? ["red"] : ["blue"]}
+      />
+    );
   }, [height, width, winner]);
 
   return (
     <Grid>
-      {score.map((value, index) => {
-        return (
-          <div
-            key={index}
-            style={{
-              background:
-                tour === index ? (index ? "blue" : "red") : "transparent",
-            }}
-          >
-            {index + 1}: {value}
-          </div>
-        );
-      })}
       <svg width="50%" height="50%" viewBox={`0,0,${taille},${taille}`}>
         {verticals.map((row, y) =>
           row.map((cell, x) => (
