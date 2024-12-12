@@ -1,5 +1,8 @@
 import { Board, Coup, PlayerValue } from "../board";
+import { AlphaBetaPlayer } from "./AlphaBetaPlayer";
 import { IaPlayer } from "./IAPlayer";
+import { MctsPlayer } from "./MCTSPlayer";
+import { MinimaxPlayer } from "./MinimaxPlayer";
 
 
 /**
@@ -8,23 +11,20 @@ import { IaPlayer } from "./IAPlayer";
  */
 export class FastestPlayer extends IaPlayer {
 
-    /*
-     * La profondeur de recherche.
-     */
-    private depth: number;
+    readonly parameters: ConstructorParameters<typeof MinimaxPlayer>[0] & ConstructorParameters<typeof AlphaBetaPlayer>[0] & ConstructorParameters<typeof MctsPlayer>[0];
 
     /*
      * Les IA à jouer.
      */
-    private ias: ("minimax" | "alphabeta" | "mcts")[] = ["minimax", "alphabeta", "mcts"]
+    readonly ias: ("minimax" | "alphabeta" | "mcts")[] = ["minimax", "alphabeta", "mcts"]
 
     /**
      * 
      * @param {number} depth - La profondeur de recherche.
      */
-    constructor({ depth }: { depth: number }) {
+    constructor(parameters: ConstructorParameters<typeof MinimaxPlayer>[0] & ConstructorParameters<typeof AlphaBetaPlayer>[0] & ConstructorParameters<typeof MctsPlayer>[0]) {
         super();
-        this.depth = depth;
+        this.parameters = parameters;
     }
 
     /**
@@ -41,7 +41,7 @@ export class FastestPlayer extends IaPlayer {
             return new Promise<[Coup, typeof ia]>((resolve) => {
                 const worker = new Worker(new URL("../playerWorker.ts", import.meta.url));
                 workers.push(worker);
-                worker.postMessage({ board: JSON.parse(JSON.stringify(board)), depth: this.depth, player, type: ia });
+                worker.postMessage({ board: JSON.parse(JSON.stringify(board)), parameters: this.parameters, player, type: ia });
                 worker.addEventListener("message", (e) => {
                     resolve([e.data, ia]);
                 });

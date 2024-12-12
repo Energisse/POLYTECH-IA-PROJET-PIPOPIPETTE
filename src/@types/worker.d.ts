@@ -1,41 +1,28 @@
 import { playValue, playerValue } from "../utils/game"
 
+
+type PlayerStartEvent = {
+    type: "human" | "random",
+} | {
+    type: "minimax" | "alphabeta",
+    depth: number
+} | {
+    type: "mcts",
+    iteration: number,
+    simulation: number,
+    c: number
+} | {
+    type: "fastest",
+    depth: number
+    iteration: number,
+    simulation: number,
+    c: number
+}
+
 export interface MainToWorkerEventMap {
     "start": CustomEvent<{
-        player1: {
-            type: "human" | "random",
-        } | {
-            type: "minimax" | "alphabeta",
-            depth: number
-        } | {
-            type: "mcts",
-            iteration: number,
-            simulation: number,
-            c: number
-        } | {
-            type: "fastest",
-            depth: number,
-            iteration: number,
-            simulation: number,
-            c: number
-        }
-        player2: {
-            type: "human" | "random",
-        } | {
-            type: "minimax" | "alphabeta",
-            depth: number
-        } | {
-            type: "mcts",
-            iteration: number,
-            simulation: number,
-            c: number
-        } | {
-            type: "fastest",
-            depth: number,
-            iteration: number,
-            simulation: number,
-            c: number
-        }
+        player1: PlayerStartEvent
+        player2: PlayerStartEvent
         size: number
     }>,
     "play": CustomEvent<{

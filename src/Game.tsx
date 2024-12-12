@@ -32,7 +32,7 @@ function Game() {
     x: number,
     y: number
   ) {
-    play(x, y, orientation);
+    play({ x, y, orientation });
   }
 
   const { width, height } = useWindowSize();

@@ -1,26 +1,15 @@
 import { Button, ButtonGroup, Grid, Slider, TextField } from "@mui/material";
 import { useContext, useState } from "react";
-import { MyContext } from "./context";
-
-const playerList = [
-  "human",
-  "minimax",
-  "alphabeta",
-  "mcts",
-  "random",
-  "fastest",
-] as const;
-
-export type playerType = (typeof playerList)[number];
+import { MyContext, playerList, PlayerType } from "./context";
 
 function Menu() {
   const { createGame } = useContext(MyContext);
 
   const [size, setSize] = useState<number>(3);
 
-  const [player1, setPlayer1] = useState<playerType>("human");
+  const [player1, setPlayer1] = useState<PlayerType>("human");
 
-  const [player2, setPlayer2] = useState<playerType>("human");
+  const [player2, setPlayer2] = useState<PlayerType>("human");
 
   const [configJoeur1, setConfigJoueur1] = useState<{
     depth: number;
@@ -71,7 +60,7 @@ function Menu() {
                 <Button
                   variant={player1 === player ? "contained" : "outlined"}
                   color="error"
-                  onClick={() => setPlayer1(player as playerType)}
+                  onClick={() => setPlayer1(player as PlayerType)}
                   key={index}
                 >
                   {player}
@@ -144,7 +133,7 @@ function Menu() {
               {playerList.map((player, index) => (
                 <Button
                   variant={player2 === player ? "contained" : "outlined"}
-                  onClick={() => setPlayer2(player as playerType)}
+                  onClick={() => setPlayer2(player as PlayerType)}
                   key={index}
                 >
                   {player}

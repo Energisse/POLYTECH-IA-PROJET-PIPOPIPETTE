@@ -49,10 +49,8 @@ export class Board {
         }
     }
 
-    public getWinner(): 0 | 1 | null {
-        if (this.score[0] > this.cells.length ** 2 / 2) return 0;
-        if (this.score[1] > this.cells.length ** 2 / 2) return 1;
-        return null;
+    public getWinner(): -1 | 0 | 1 {
+        return this.score[0] > this.score[1] ? 0 : this.score[0] < this.score[1] ? 1 : -1;
     }
 
     public play(

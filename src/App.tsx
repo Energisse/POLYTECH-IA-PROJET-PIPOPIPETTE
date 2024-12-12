@@ -2,18 +2,6 @@ import React from "react";
 import { Grid } from "@mui/material";
 import Game from "./Game";
 import Menu from "./Menu";
-import Treee from "./Tree";
-
-const playerList = [
-  "human",
-  "minimax",
-  "alphabeta",
-  "mcts",
-  "random",
-  "fastest",
-] as const;
-
-export type playerType = (typeof playerList)[number];
 
 function App() {
   return (
@@ -28,9 +16,6 @@ function App() {
               <Menu />
             </Grid>
           </Grid>
-        </Grid>
-        <Grid item flex={1} xs={12}>
-          <Treee />
         </Grid>
       </Grid>
     </div>
