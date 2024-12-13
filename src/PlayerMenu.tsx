@@ -22,24 +22,28 @@ export default function PlayerMenu({
 } & Pick<ButtonProps, "color">) {
   return (
     <Grid container flexDirection={"column"} gap={2}>
-      <ButtonGroup>
-        {playerList.map((player, index) => (
-          <Button
-            variant={type === player ? "contained" : "outlined"}
-            color={color}
-            onClick={() => setPlayerConfig({ type: player })}
-            key={index}
-          >
-            {player}
-          </Button>
-        ))}
-      </ButtonGroup>
+      <Grid item overflow="scroll" xs={12}>
+        <ButtonGroup>
+          {playerList.map((player, index) => (
+            <Button
+              variant={type === player ? "contained" : "outlined"}
+              color={color}
+              onClick={() => setPlayerConfig({ type: player })}
+              key={index}
+            >
+              {player}
+            </Button>
+          ))}
+        </ButtonGroup>
+      </Grid>
       {type !== "human" && (
         <TextField
           label="min time (ms)"
           value={minTimeToPlay}
           type="number"
-          onChange={(e) => setPlayerConfig({ minTimeToPlay: +e.target.value })}
+          onChange={(e) =>
+            setPlayerConfig({ minTimeToPlay: +e.target.value || 1 })
+          }
           fullWidth
         />
       )}
@@ -56,7 +60,11 @@ export default function PlayerMenu({
             label="depth limit"
             value={depthLimit}
             type="number"
-            onChange={(e) => setPlayerConfig({ depthLimit: +e.target.value })}
+            onChange={(e) =>
+              setPlayerConfig({
+                depthLimit: e.target.value ? +e.target.value : undefined,
+              })
+            }
             fullWidth
           />
         </>

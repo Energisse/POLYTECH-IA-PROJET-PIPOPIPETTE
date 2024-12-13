@@ -33,45 +33,49 @@ function Menu() {
 
   return (
     <Grid container gap={2} flexDirection={"column"}>
-      <Paper elevation={1}>
-        <Box p={2}>
-          <Typography>Size : {size}</Typography>
+      <Grid item xs={12}>
+        <Paper elevation={1}>
+          <Box p={2}>
+            <Typography>Size : {size}</Typography>
 
-          <Slider
-            value={size}
-            onChange={handleChange}
-            min={2}
-            max={10}
-            step={1}
-            valueLabelDisplay="auto"
-            marks
-          />
-        </Box>
-      </Paper>
-      <Paper
-        elevation={1}
-        sx={
-          tour === 0
-            ? {
-                boxShadow: " 0px 0px 20px 2px #FF0000",
-              }
-            : {}
-        }
-      >
-        <Grid container direction={"column"} gap={2} p={2}>
-          <Grid container justifyContent={"space-between"}>
-            <Typography>Player 1</Typography>
-            <Typography> {score[0]}</Typography>
+            <Slider
+              value={size}
+              onChange={handleChange}
+              min={2}
+              max={15}
+              step={1}
+              valueLabelDisplay="auto"
+              marks
+            />
+          </Box>
+        </Paper>
+      </Grid>
+      <Grid item xs={12}>
+        <Paper
+          elevation={1}
+          sx={
+            tour === 0
+              ? {
+                  boxShadow: " 0px 0px 20px 2px #FF0000",
+                }
+              : {}
+          }
+        >
+          <Grid container direction={"column"} gap={2} p={2}>
+            <Grid container justifyContent={"space-between"}>
+              <Typography>Player 1</Typography>
+              <Typography> {score[0]}</Typography>
+            </Grid>
+            <PlayerMenu
+              {...configJoeur1}
+              setPlayerConfig={(config) => {
+                setConfigJoueur1({ ...configJoeur1, ...config });
+              }}
+              color="error"
+            />
           </Grid>
-          <PlayerMenu
-            {...configJoeur1}
-            setPlayerConfig={(config) => {
-              setConfigJoueur1({ ...configJoeur1, ...config });
-            }}
-            color="error"
-          />
-        </Grid>
-      </Paper>
+        </Paper>
+      </Grid>
       <Grid item xs={12}>
         <Paper
           elevation={1}
