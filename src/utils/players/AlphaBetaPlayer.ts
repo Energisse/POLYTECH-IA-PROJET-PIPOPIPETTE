@@ -15,7 +15,7 @@ export class AlphaBetaPlayer extends IaPlayer {
 
     playIa(board: Board, player: PlayerValue) {
         return new Promise<Coup>((resolve) => {
-            const { nodes, ...coup } = nigamax(board, this.depth, true, player, this.depthLimit)
+            const { nodes, ...coup } = nigamax(board, this.depth, player, this.depthLimit)
             console.log(`Player ${player} (${(this as any).constructor.name}) : ${nodes} nodes`)
             resolve(coup);
         })

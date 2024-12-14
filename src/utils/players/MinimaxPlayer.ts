@@ -15,7 +15,7 @@ export class MinimaxPlayer extends IaPlayer {
 
     playIa(board: Board, player: 0 | 1): Promise<Coup> {
         return new Promise<Coup>((resolve) => {
-            const { nodes, ...coup } = negamax(board, this.depth, true, player, this.depthLimit)
+            const { nodes, ...coup } = negamax(board, this.depth, player, this.depthLimit)
             console.log(`Player ${player} (${(this as any).constructor.name}) : ${nodes} nodes`)
             resolve(coup);
         })

@@ -83,7 +83,6 @@ const MyContextProvider = ({ children }: { children: ReactNode }) => {
         });
         game.current.addEventListener("change", (e) => {
           const { verticals, horizontals, cells, score, tour } = e.detail;
-          console.log(tour);
           setVerticals(verticals);
           setHorizontals(horizontals);
           setCells(cells);
