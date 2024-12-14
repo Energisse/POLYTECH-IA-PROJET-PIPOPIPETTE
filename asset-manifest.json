@@ -1,19 +1,19 @@
 {
   "files": {
     "main.css": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/css/main.99f6b8fa.css",
-    "main.js": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/main.83e75e50.js",
-    "static/js/378.a036ddbf.chunk.js": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/378.a036ddbf.chunk.js",
+    "main.js": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/main.72170ac2.js",
+    "static/js/378.d878fd34.chunk.js": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/378.d878fd34.chunk.js",
     "static/js/453.3b1f8bd0.chunk.js": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/453.3b1f8bd0.chunk.js",
-    "static/js/843.ce75cdb2.chunk.js": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/843.ce75cdb2.chunk.js",
+    "static/js/843.aea85cc4.chunk.js": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/843.aea85cc4.chunk.js",
     "index.html": "/POLYTECH-IA-PROJET-PIPOPIPETTE/index.html",
     "main.99f6b8fa.css.map": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/css/main.99f6b8fa.css.map",
-    "main.83e75e50.js.map": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/main.83e75e50.js.map",
-    "378.a036ddbf.chunk.js.map": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/378.a036ddbf.chunk.js.map",
+    "main.72170ac2.js.map": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/main.72170ac2.js.map",
+    "378.d878fd34.chunk.js.map": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/378.d878fd34.chunk.js.map",
     "453.3b1f8bd0.chunk.js.map": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/453.3b1f8bd0.chunk.js.map",
-    "843.ce75cdb2.chunk.js.map": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/843.ce75cdb2.chunk.js.map"
+    "843.aea85cc4.chunk.js.map": "/POLYTECH-IA-PROJET-PIPOPIPETTE/static/js/843.aea85cc4.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.99f6b8fa.css",
-    "static/js/main.83e75e50.js"
+    "static/js/main.72170ac2.js"
   ]
 }
