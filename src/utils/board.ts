@@ -142,12 +142,12 @@ export class Board {
     public *getNodes(depthLimit?: number): NodeGenerator {
         const playable = [
             ...this.verticals
-                .flatMap((row, y) => row.map((value, x) => ({ x, y, value, orientation: "vertical" } satisfies Coup & { value: number })))
-                .filter(({ value }) => value === -1),
+                .flatMap((row, y) => row.map((value, x) => ({ x, y, value, orientation: "vertical" } satisfies Coup & { value: number }))),
             ...this.horizontals
                 .flatMap((row, y) => row.map((value, x) => ({ x, y, value, orientation: "horizontal" } satisfies Coup & { value: number })))
-                .filter(({ value }) => value === -1)
         ]
+            .filter(({ value }) => value === -1)
+
 
         let currentIndex = playable.length;
         while (currentIndex !== 0) {

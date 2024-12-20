@@ -4,8 +4,11 @@ import {
   Button,
   TextField,
   ButtonProps,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import { PlayerConfig, playerList } from "./context";
+import { models } from "./models";
 
 export default function PlayerMenu({
   c,
@@ -17,8 +20,12 @@ export default function PlayerMenu({
   color,
   minTimeToPlay,
   depthLimit,
+  mctsIteration,
+  model,
+  size,
 }: PlayerConfig & {
   setPlayerConfig: (config: Partial<PlayerConfig>) => void;
+  size: number;
 } & Pick<ButtonProps, "color">) {
   return (
     <Grid container flexDirection={"column"} gap={2}>
@@ -99,6 +106,35 @@ export default function PlayerMenu({
           onChange={(e) => setPlayerConfig({ c: +e.target.value })}
           fullWidth
         />
+      )}
+
+      {type === "alphaZero" && (
+        <>
+          <TextField
+            label="iteration"
+            value={mctsIteration}
+            type="number"
+            onChange={(e) =>
+              setPlayerConfig({ mctsIteration: +e.target.value })
+            }
+            fullWidth
+          />
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            label="Age"
+            value={model}
+            onChange={(e) => setPlayerConfig({ model: e.target.value })}
+          >
+            {Array.from(models.get(size)?.entries() || []).map(
+              ([key, value]) => (
+                <MenuItem key={key} value={key}>
+                  {key}
+                </MenuItem>
+              )
+            )}
+          </Select>
+        </>
       )}
     </Grid>
   );

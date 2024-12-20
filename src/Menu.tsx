@@ -1,8 +1,19 @@
 import { Box, Button, Grid, Paper, Slider, Typography } from "@mui/material";
 import { useContext, useState } from "react";
-import { MyContext } from "./context";
-import { PlayerConfig } from "./context";
+import { MyContext, PlayerConfig } from "./context";
 import PlayerMenu from "./PlayerMenu";
+
+const playerList = [
+  "human",
+  "minimax",
+  "alphabeta",
+  "mcts",
+  "random",
+  "fastest",
+  "alphaZero",
+] as const;
+
+export type playerType = (typeof playerList)[number];
 
 function Menu() {
   const { createGame, score, tour } = useContext(MyContext);
@@ -16,6 +27,8 @@ function Menu() {
     c: Math.sqrt(2),
     type: "human",
     minTimeToPlay: 500,
+    mctsIteration: 10,
+    model: "",
   });
 
   const [configJoeur2, setConfigJoueur2] = useState<PlayerConfig>({
@@ -25,6 +38,8 @@ function Menu() {
     c: Math.sqrt(2),
     type: "human",
     minTimeToPlay: 500,
+    mctsIteration: 10,
+    model: "",
   });
 
   const handleChange = (event: Event, newValue: number | number[]) => {
@@ -67,6 +82,7 @@ function Menu() {
               <Typography> {score[0]}</Typography>
             </Grid>
             <PlayerMenu
+              size={size}
               {...configJoeur1}
               setPlayerConfig={(config) => {
                 setConfigJoueur1({ ...configJoeur1, ...config });
@@ -93,6 +109,7 @@ function Menu() {
               <Typography> {score[1]}</Typography>
             </Grid>
             <PlayerMenu
+              size={size}
               {...configJoeur2}
               setPlayerConfig={(config) => {
                 setConfigJoueur2({ ...configJoeur2, ...config });

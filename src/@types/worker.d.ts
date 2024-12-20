@@ -26,6 +26,11 @@ type PlayerStartEvent = {
     c: number
     minTimeToPlay: number
     depthLimit?: number
+} | {
+    type: "alphaZero",
+    minTimeToPlay: number
+    model: string
+    mctsIteration: number
 }
 
 export interface MainToWorkerEventMap {

@@ -2,6 +2,7 @@ import { MainToWorkerEventMap } from "./@types/worker";
 import { PlayerValue, PlayValue } from "./utils/board";
 import Game from "./utils/game";
 import { AlphaBetaPlayer } from "./utils/players/AlphaBetaPlayer";
+import AlplhaZeroPlayer from "./utils/players/AlphaZeroPlayer";
 import { FastestPlayer } from "./utils/players/FastestPlayer";
 import { HumanPlayer } from "./utils/players/HumanPlayer";
 import { MctsPlayer } from "./utils/players/MCTSPlayer";
@@ -103,6 +104,8 @@ function createPlayer(player: MainToWorkerEventMap["start"]["detail"]["player1"]
             return new MctsPlayer(player);
         case "fastest":
             return new FastestPlayer(player);
+        case "alphaZero":
+            return new AlplhaZeroPlayer(player);
     }
 }
 

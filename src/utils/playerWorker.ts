@@ -1,11 +1,9 @@
 import { Board } from "./board";
 import { AlphaBetaPlayer } from "./players/AlphaBetaPlayer";
 import { FastestPlayer } from "./players/FastestPlayer";
-import { HumanPlayer } from "./players/HumanPlayer";
 import { MctsPlayer } from "./players/MCTSPlayer";
 import { MinimaxPlayer } from "./players/MinimaxPlayer";
 import { Player } from "./players/Player";
-import { RandomPlayer } from "./players/RandomPlayer";
 
 declare var self: DedicatedWorkerGlobalScope;
 

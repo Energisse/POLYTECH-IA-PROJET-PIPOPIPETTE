@@ -9,6 +9,7 @@ export const playerList = [
   "mcts",
   "random",
   "fastest",
+  "alphaZero",
 ] as const;
 
 export type PlayerType = (typeof playerList)[number];
@@ -21,6 +22,8 @@ export type PlayerConfig = {
   type: PlayerType;
   minTimeToPlay: number;
   depthLimit?: number;
+  model: string;
+  mctsIteration: number;
 };
 
 type MyContextData = {
