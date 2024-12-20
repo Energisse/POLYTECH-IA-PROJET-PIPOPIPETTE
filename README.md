@@ -14,6 +14,7 @@ Le jeu permet de choisir parmi différents types de joueurs, qu'ils soient humai
 - **MCTS** : IA basée sur _Monte Carlo Tree Search_.
 - **Fastest** : Sélectionne automatiquement la meilleure solution entre Alphabeta, Minimax et MCTS en fonction du temps.
 - **Random** : Joue des coups aléatoires.
+- **AlphaZero** : IA basée sur l'algorithme _AlphaZero_ (cassé).
 
 ## **Paramétrage des IA**
 
@@ -36,6 +37,11 @@ Les comportements des IA peuvent être ajustés via plusieurs paramètres pour s
 - **Iterations** : Nombre total d'itérations du processus MCTS.
 - **Simulations** : Nombre de simulations effectuées par itération.
 - **C (paramètre d'exploration)** : Facteur d'exploration, influençant le compromis entre exploration et exploitation.
+
+#### **AlphaZero**
+
+- **iteration** : Nombre de simulations effectuées par itération.
+- **model** : Modèle utilisé pour prédire les probabilités et les valeurs (SxS_F_B_I => S = taille, F = nombre de filtres, B = nombre de blocs, I = iteration meilleur que la précédente).
 
 ## **Comment utiliser le projet ?**
 
