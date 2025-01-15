@@ -59,4 +59,4 @@ Les comportements des IA peuvent être ajustés via plusieurs paramètres pour s
 
 ### **Auteur**
 
-Développé avec ❤️ par Thomas.
+Développé par HALVICK Thomas et GHAZEL Hassen.
